@@ -10,3 +10,4 @@ COPY ./custom_addons /mnt/extra-addons
 COPY ./odoo-docker.conf /etc/odoo/odoo.conf
 
 USER odoo
+

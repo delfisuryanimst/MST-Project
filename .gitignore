@@ -3,6 +3,9 @@ pgdata/
 pgsql/
 filestore/
 
+# Odoo core (sudah ada di Docker image odoo:17.0, tidak perlu di-push)
+odoo/
+
 # Logs
 odoo.log
 *.log

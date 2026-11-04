@@ -46,3 +46,4 @@ Atau upgrade module tertentu:
 ```bash
 docker compose exec odoo odoo -c /etc/odoo/odoo.conf -d odoo17 -u quality_control --stop-after-init
 ```
+
