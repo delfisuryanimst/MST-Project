@@ -32,3 +32,9 @@ Thumbs.db
 # Temp files
 *.tmp
 *.bak
+
+# Docker - jangan ignore (perlu di-push)
+# docker-compose.yml
+# Dockerfile
+# odoo-docker.conf
+

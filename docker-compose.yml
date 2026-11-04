@@ -1,0 +1,48 @@
+services:
+
+  db:
+    image: postgres:15
+    container_name: mst_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: odoo17
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - odoo_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d odoo17"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  odoo:
+    build: .
+    image: mst-odoo17
+    container_name: mst_odoo
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: odoo
+      PASSWORD: odoo
+    volumes:
+      - ./custom_addons:/mnt/extra-addons
+      - odoo_filestore:/var/lib/odoo
+    networks:
+      - odoo_net
+
+volumes:
+  db_data:
+  odoo_filestore:
+
+networks:
+  odoo_net:
+    driver: bridge
