@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="stock_generate_lots.GenerateLots">
+        <button class="btn btn-link" t-on-click="openDialog">Generate Lots</button>
+    </t>
+    <t t-name="stock_generate_lots.GenerateLotsDialog">
+        <Dialog size="'md'" title="title" withBodyPadding="false">
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="_onGenerate">Generate</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Discard</button>
+            </t>
+            <div class="o_form_view o_form_nosheet">
+                <div class="grid o_inner_group">
+                    <div class="d-flex d-sm-contents">
+                        <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                            <label class="o_form_label" for="first_lot_0">First Lot Number</label>
+                        </div>
+                        <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                            <div class="o_field_widget o_field_char">
+                                <input placeholder="SN-0001" class="o_input" t-ref="firstLot" id="first_lot_0" type="text"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex d-sm-contents">
+                        <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                            <label class="o_form_label" for="qty_per_lot_0">Quantity per Lot</label>
+                        </div>
+                        <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                            <div class="o_field_widget o_field_float d-flex align-items-center">
+                                <input inputmode="decimal" class="o_input" t-ref="qtyPerLot" id="qty_per_lot_0" type="text"/>
+                                <span class="ms-2" t-esc="uomName"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex d-sm-contents">
+                        <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                            <label class="o_form_label" for="qty_received_0">Quantity Received</label>
+                        </div>
+                        <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                            <div class="o_field_widget o_field_float d-flex align-items-center">
+                                <input inputmode="decimal" class="o_input" t-ref="qtyReceived" id="qty_received_0" type="text"/>
+                                <span class="ms-2" t-esc="uomName"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex d-sm-contents">
+                        <div class="o_cell flex-grow-0 flex-sm-grow-0 text-900 pe-3">
+                            <label class="o_form_label" for="keep_lines_0">Keep current lines</label>
+                        </div>
+                        <div class="o_cell flex-grow-1 flex-sm-grow-0">
+                            <div class="o_input">
+                                <input type="checkbox" t-ref="keepLines" id="keep_lines_0"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+</templates>

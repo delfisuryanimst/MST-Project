@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_alert_wizard_view_form" model="ir.ui.view">
+        <field name="name">qc.alert.wizard.form</field>
+        <field name="model">qc.alert.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Quality Alerts">
+                <group>
+                    <field name="picking_id"/>
+                    <field name="team_id"/>
+                </group>
+                <field name="check_ids" options="{'no_create': True}">
+                    <tree>
+                        <field name="name"/>
+                        <field name="product_id"/>
+                        <field name="lot_name"/>
+                        <field name="fail_qty"/>
+                        <field name="qty_to_downgrade"/>
+                        <field name="qty_to_scrap"/>
+                        <field name="team_id"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button name="action_create_alerts" string="Create" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

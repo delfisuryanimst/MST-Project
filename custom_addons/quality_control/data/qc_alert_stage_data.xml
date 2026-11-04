@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="qc_alert_stage_new" model="qc.alert.stage">
+        <field name="name">New</field>
+        <field name="sequence">1</field>
+    </record>
+</odoo>

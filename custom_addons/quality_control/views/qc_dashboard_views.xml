@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_dashboard_view_kanban" model="ir.ui.view">
+        <field name="name">qc.dashboard.kanban</field>
+        <field name="model">qc.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" create="0" group_create="0">
+                <field name="name"/>
+                <field name="color"/>
+                <field name="team_id"/>
+                <field name="check_count"/>
+                <field name="alert_count"/>
+                <field name="pending_count"/>
+                <field name="failed_count"/>
+                <field name="partial_count"/>
+                <field name="passed_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{kanban_color(record.color.raw_value)}">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary fs-4"><field name="name"/></div>
+                                    <div class="text-muted">
+                                        <t t-if="record.team_id.raw_value"><field name="team_id"/></t>
+                                        <t t-else="">Undefined</t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button class="btn btn-primary mb-2" name="action_open_alerts" type="object">
+                                            <t t-esc="record.alert_count.value"/> QC Alerts
+                                        </button>
+                                        <br/>
+                                        <button class="btn btn-primary" name="action_open_checks" type="object">
+                                            <t t-esc="record.check_count.value"/> QC Check
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex justify-content-between">
+                                            <a name="action_open_pickings" type="object" context="{'qc_status': 'pending'}">Pending QC</a>
+                                            <span><t t-esc="record.pending_count.value"/></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <a name="action_open_pickings" type="object" context="{'qc_status': 'failed'}">Failed QC</a>
+                                            <span><t t-esc="record.failed_count.value"/></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <a name="action_open_pickings" type="object" context="{'qc_status': 'partial'}">Partially Pass</a>
+                                            <span><t t-esc="record.partial_count.value"/></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <a name="action_open_pickings" type="object" context="{'qc_status': 'passed'}">Passed QC</a>
+                                            <span><t t-esc="record.passed_count.value"/></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu"
+                                 groups="quality_control.group_qc_manager">
+                                <div class="o_kanban_card_manage_settings row">
+                                    <div class="col-8" role="menuitem">
+                                        <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <a type="edit" role="menuitem">Settings</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="qc_dashboard_view_tree" model="ir.ui.view">
+        <field name="name">qc.dashboard.tree</field>
+        <field name="model">qc.dashboard</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="team_id"/>
+                <field name="picking_type_ids" widget="many2many_tags"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qc_dashboard_view_form" model="ir.ui.view">
+        <field name="name">qc.dashboard.form</field>
+        <field name="model">qc.dashboard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="team_id"/>
+                        <field name="picking_type_ids" widget="many2many_tags"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="qc_dashboard_action" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">qc.dashboard</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="qc_dashboard_view_kanban"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Buat kartu dashboard</p>
+            <p>Quality → Configuration → Dashboard Cards</p>
+        </field>
+    </record>
+
+    <record id="qc_dashboard_config_action" model="ir.actions.act_window">
+        <field name="name">Dashboard Cards</field>
+        <field name="res_model">qc.dashboard</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

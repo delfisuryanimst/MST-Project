@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_inherit_qc" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.qc</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="has_on_demand_qc" invisible="1"/>
+                <button name="action_view_qc_checks" type="object" string="Quality Checks"
+                        class="btn-primary" invisible="qc_todo_count == 0"
+                        groups="quality_control.group_qc_user"/>
+                <button name="action_request_qc" type="object" string="Request QC"
+                        invisible="not has_on_demand_qc"
+                        groups="quality_control.group_qc_user"/>
+                <field name="has_failed_qc" invisible="1"/>
+                <button name="open_quality_alert" type="object" string="Quality Alerts"
+                        class="btn-primary" invisible="not has_failed_qc"
+                        groups="quality_control.group_qc_user"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="qc_todo_count" invisible="1"/>
+                <button name="action_view_qc_checks" type="object" class="oe_stat_button"
+                        icon="fa-check-square-o" invisible="qc_check_count == 0"
+                        groups="quality_control.group_qc_user">
+                    <field name="qc_check_count" widget="statinfo" string="Quality Checks"/>
+                </button>
+                <button name="action_view_qc_alerts" type="object" class="oe_stat_button"
+                        icon="fa-bell" invisible="qc_alert_count == 0"
+                        groups="quality_control.group_qc_user">
+                    <field name="qc_alert_count" widget="statinfo" string="Quality Alerts"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="qc_status" invisible="1"/>
+                <div class="alert alert-info mb-0 text-center" role="alert" invisible="qc_status != 'pending'">
+                    Product(s) Quality Control Still Pending
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_picking_search_inherit_qc" model="ir.ui.view">
+        <field name="name">stock.picking.search.inherit.qc</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='available']" position="after">
+                <separator/>
+                <filter name="qc_pending" string="Pending QC" domain="[('qc_status', '=', 'pending')]"/>
+                <filter name="qc_failed" string="Failed QC" domain="[('qc_status', '=', 'failed')]"/>
+                <filter name="qc_partial" string="Partially Passed QC" domain="[('qc_status', '=', 'partial')]"/>
+                <filter name="qc_passed" string="Passed QC" domain="[('qc_status', '=', 'passed')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- All Operations -->
+    <record id="action_qc_picking_all" model="ir.actions.act_window">
+        <field name="name">QC Transfers</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('has_qc', '=', True)]</field>
+        <field name="context">{'contact_display': 'partner_address', 'create': False}</field>
+    </record>
+    <record id="action_qc_picking_pending" model="ir.actions.act_window">
+        <field name="name">Pending QC</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('has_qc', '=', True), ('qc_status', '=', 'pending')]</field>
+        <field name="context">{'create': False, 'search_default_picking_type': 1}</field>
+    </record>
+    <record id="action_qc_picking_failed" model="ir.actions.act_window">
+        <field name="name">Failed QC</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('has_qc', '=', True), ('qc_status', '=', 'failed')]</field>
+        <field name="context">{'create': False, 'search_default_picking_type': 1}</field>
+    </record>
+    <record id="action_qc_picking_partial" model="ir.actions.act_window">
+        <field name="name">Partially Passed QC</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('has_qc', '=', True), ('qc_status', '=', 'partial')]</field>
+        <field name="context">{'create': False, 'search_default_picking_type': 1}</field>
+    </record>
+    <record id="action_qc_picking_passed" model="ir.actions.act_window">
+        <field name="name">Passed QC</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('has_qc', '=', True), ('qc_status', '=', 'passed')]</field>
+        <field name="context">{'create': False, 'search_default_picking_type': 1}</field>
+    </record>
+
+    <record id="vpicktree_inherit_qc" model="ir.ui.view">
+        <field name="name">stock.picking.tree.inherit.qc</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="qc_status" optional="show" widget="badge"
+                       decoration-info="qc_status == 'pending'"
+                       decoration-danger="qc_status == 'failed'"
+                       decoration-warning="qc_status == 'partial'"
+                       decoration-success="qc_status == 'passed'"/>
+            </field>
+        </field>
+    </record>
+</odoo>

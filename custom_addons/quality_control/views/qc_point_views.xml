@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_point_view_tree" model="ir.ui.view">
+        <field name="name">qc.point.tree</field>
+        <field name="model">qc.point</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="product_ids" widget="many2many_tags" optional="show"/>
+                <field name="product_category_ids" widget="many2many_tags" optional="show"/>
+                <field name="picking_type_ids" widget="many2many_tags"/>
+                <field name="test_type"/>
+                <field name="measure_frequency"/>
+                <field name="team_id"/>
+                <field name="is_mandatory"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qc_point_view_form" model="ir.ui.view">
+        <field name="name">qc.point.form</field>
+        <field name="model">qc.point</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Cek Kemasan Receipt"/></h1>
+                    </div>
+                    <group>
+                        <group string="Apply On">
+                            <field name="product_category_ids" widget="many2many_tags"/>
+                            <field name="product_ids" widget="many2many_tags"/>
+                            <field name="picking_type_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Control">
+                            <field name="team_id"/>
+                            <field name="user_id"/>
+                            <field name="is_mandatory"/>
+                            <field name="measure_frequency" widget="radio"/>
+                            <label for="partial_test"/>
+                            <div class="o_row">
+                                <field name="partial_test"/>
+                                <span>% by</span>
+                                <field name="partial_test_by"/>
+                            </div>
+                            <field name="test_type"/>
+                            <field name="max_tests"/>
+                        </group>
+                    </group>
+                    <group string="Measurement" invisible="test_type != 'measure'">
+                        <field name="norm"/>
+                        <field name="norm_unit"/>
+                        <label for="tolerance_min" string="Tolerance"/>
+                        <div class="o_row">
+                            <field name="tolerance_min"/>
+                            <span>to</span>
+                            <field name="tolerance_max"/>
+                        </div>
+                    </group>
+                    <notebook>
+                        <page string="Instructions">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                    <field name="active" invisible="1"/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="qc_point_action" model="ir.actions.act_window">
+        <field name="name">QC Points</field>
+        <field name="res_model">qc.point</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

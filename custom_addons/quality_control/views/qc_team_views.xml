@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_team_view_tree" model="ir.ui.view">
+        <field name="name">qc.team.tree</field>
+        <field name="model">qc.team</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qc_team_view_form" model="ir.ui.view">
+        <field name="name">qc.team.form</field>
+        <field name="model">qc.team</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="user_ids" widget="many2many_tags"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- QC Team Overview: kanban per team -->
+    <record id="qc_team_view_kanban" model="ir.ui.view">
+        <field name="name">qc.team.kanban.dashboard</field>
+        <field name="model">qc.team</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" create="0">
+                <field name="name"/>
+                <field name="color"/>
+                <field name="check_todo_count"/>
+                <field name="check_fail_count"/>
+                <field name="check_pass_count"/>
+                <field name="alert_open_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{kanban_color(record.color.raw_value)}">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary fs-4"><field name="name"/></div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button class="btn btn-primary mb-1" name="action_open_checks" type="object">QC Checks</button><br/>
+                                        <button class="btn btn-secondary" name="action_open_alerts" type="object">QC Alerts</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <a name="action_open_checks_todo" type="object" class="d-block">
+                                            <t t-esc="record.check_todo_count.value"/> Pending QC
+                                        </a>
+                                        <a name="action_open_checks_fail" type="object" class="d-block text-danger">
+                                            <t t-esc="record.check_fail_count.value"/> Failed QC
+                                        </a>
+                                        <span class="d-block text-success">
+                                            <t t-esc="record.check_pass_count.value"/> Passed QC
+                                        </span>
+                                        <a name="action_open_alerts" type="object" class="d-block text-warning">
+                                            <t t-esc="record.alert_open_count.value"/> Open Alerts
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="qc_team_action" model="ir.actions.act_window">
+        <field name="name">QC Teams</field>
+        <field name="res_model">qc.team</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="qc_team_dashboard_action" model="ir.actions.act_window">
+        <field name="name">QC Team Overview</field>
+        <field name="res_model">qc.team</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="qc_team_view_kanban"/>
+    </record>
+</odoo>

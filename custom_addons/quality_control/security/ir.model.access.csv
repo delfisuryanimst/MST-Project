@@ -1,0 +1,25 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_qc_team_user,qc.team user,model_qc_team,group_qc_user,1,0,0,0
+access_qc_team_manager,qc.team manager,model_qc_team,group_qc_manager,1,1,1,1
+access_qc_point_user,qc.point user,model_qc_point,group_qc_user,1,0,0,0
+access_qc_point_manager,qc.point manager,model_qc_point,group_qc_manager,1,1,1,1
+access_qc_alert_stage_user,qc.alert.stage user,model_qc_alert_stage,group_qc_user,1,0,0,0
+access_qc_alert_stage_manager,qc.alert.stage manager,model_qc_alert_stage,group_qc_manager,1,1,1,1
+access_qc_alert_tag_user,qc.alert.tag user,model_qc_alert_tag,group_qc_user,1,0,0,0
+access_qc_alert_tag_manager,qc.alert.tag manager,model_qc_alert_tag,group_qc_manager,1,1,1,1
+access_qc_check_user,qc.check user,model_qc_check,group_qc_user,1,1,1,0
+access_qc_check_manager,qc.check manager,model_qc_check,group_qc_manager,1,1,1,1
+access_qc_alert_user,qc.alert user,model_qc_alert,group_qc_user,1,1,1,0
+access_qc_alert_manager,qc.alert manager,model_qc_alert,group_qc_manager,1,1,1,1
+access_qc_check_stock_user,qc.check stock user,model_qc_check,stock.group_stock_user,1,0,0,0
+access_qc_alert_stock_user,qc.alert stock user,model_qc_alert,stock.group_stock_user,1,0,0,0
+access_qc_check_detail_user,qc.check.detail user,model_qc_check_detail,group_qc_user,1,1,1,1
+access_qc_check_detail_stock_user,qc.check.detail stock user,model_qc_check_detail,stock.group_stock_user,1,0,0,0
+access_qc_dashboard_user,qc.dashboard user,model_qc_dashboard,group_qc_user,1,0,0,0
+access_qc_dashboard_manager,qc.dashboard manager,model_qc_dashboard,group_qc_manager,1,1,1,1
+access_qc_alert_wizard_user,qc.alert.wizard user,model_qc_alert_wizard,group_qc_user,1,1,1,1
+access_qc_conversion_user,qc.conversion user,model_qc_conversion,group_qc_user,1,1,1,0
+access_qc_conversion_manager,qc.conversion manager,model_qc_conversion,group_qc_manager,1,1,1,1
+access_qc_conversion_line_user,qc.conversion.line user,model_qc_conversion_line,group_qc_user,1,1,1,1
+access_qc_conversion_stock_user,qc.conversion stock user,model_qc_conversion,stock.group_stock_user,1,0,0,0
+access_qc_conversion_line_stock_user,qc.conversion.line stock user,model_qc_conversion_line,stock.group_stock_user,1,0,0,0

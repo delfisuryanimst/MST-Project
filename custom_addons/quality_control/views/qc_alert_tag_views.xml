@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_alert_tag_view_tree" model="ir.ui.view">
+        <field name="name">qc.alert.tag.tree</field>
+        <field name="model">qc.alert.tag</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qc_alert_tag_action" model="ir.actions.act_window">
+        <field name="name">QC Alert Tags</field>
+        <field name="res_model">qc.alert.tag</field>
+        <field name="view_mode">tree</field>
+    </record>
+</odoo>

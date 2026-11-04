@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_move_operations_inherit_generate_lots" model="ir.ui.view">
+        <field name="name">stock.move.operations.form.inherit.generate.lots</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_stock_move_operations"/>
+        <field name="arch" type="xml">
+            <xpath expr="//widget[@name='import_lots']" position="after">
+                <widget class="btn btn-link btn-group" name="generate_lots" invisible="not display_import_lot"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

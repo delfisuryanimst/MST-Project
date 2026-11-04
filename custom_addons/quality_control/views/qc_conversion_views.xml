@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_conversion_view_tree" model="ir.ui.view">
+        <field name="name">qc.conversion.tree</field>
+        <field name="model">qc.conversion</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state == 'cancel'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="origin"/>
+                <field name="alert_id" optional="show"/>
+                <field name="consume_total" string="Qty Consumed" sum="Total"/>
+                <field name="produce_total" string="Qty Produced" sum="Total"/>
+                <field name="company_id" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-info="state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qc_conversion_view_form" model="ir.ui.view">
+        <field name="name">qc.conversion.form</field>
+        <field name="model">qc.conversion</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate" string="Validate" type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state != 'draft'"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done,cancel"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_alert" type="object" class="oe_stat_button"
+                                icon="fa-exclamation-triangle" string="Quality Alert" invisible="not alert_id"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="state != 'draft'"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="alert_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" readonly="state != 'draft'"/>
+                            <field name="origin" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Inventory Details" name="inventory_details">
+                            <h4>To be Consumed Item</h4>
+                            <field name="consume_line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="line_type" column_invisible="1"/>
+                                    <field name="product_id"/>
+                                    <field name="tracking"/>
+                                    <field name="qty" sum="Total"/>
+                                    <field name="uom_id"/>
+                                    <field name="location_id"/>
+                                    <field name="lot_id" required="tracking != 'none'" readonly="tracking == 'none'"
+                                           context="{'default_product_id': product_id}"/>
+                                </tree>
+                            </field>
+                            <h4 class="mt-4">To be Produced Item</h4>
+                            <button name="action_generate_lot" type="object" string="Generate Lot"
+                                    class="btn-primary mb-2" invisible="state != 'draft'"/>
+                            <field name="produce_line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="line_type" column_invisible="1"/>
+                                    <field name="product_id"/>
+                                    <field name="tracking"/>
+                                    <field name="qty" sum="Total"/>
+                                    <field name="uom_id"/>
+                                    <field name="location_id"/>
+                                    <field name="lot_id" readonly="tracking == 'none'"
+                                           context="{'default_product_id': product_id}"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Inventory Adjustments" name="inventory_adjustments">
+                            <field name="move_ids">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="product_id"/>
+                                    <field name="location_id" string="From"/>
+                                    <field name="location_dest_id" string="To"/>
+                                    <field name="quantity" string="Quantity"/>
+                                    <field name="product_uom" string="Unit"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="qc_conversion_view_search" model="ir.ui.view">
+        <field name="name">qc.conversion.search</field>
+        <field name="model">qc.conversion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="origin"/>
+                <field name="alert_id"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="done" string="Validated" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="qc_conversion_action" model="ir.actions.act_window">
+        <field name="name">Stock Conversions</field>
+        <field name="res_model">qc.conversion</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

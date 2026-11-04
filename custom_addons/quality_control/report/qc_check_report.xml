@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_qc_check" model="ir.actions.report">
+        <field name="name">Quality Check</field>
+        <field name="model">qc.check</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">quality_control.report_qc_check</field>
+        <field name="report_file">quality_control.report_qc_check</field>
+        <field name="print_report_name">'QC - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_qc_check"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_qc_check_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Quality Check <span t-field="o.name"/></h2>
+                <table class="table table-sm table-borderless mb-3">
+                    <tr>
+                        <td><strong>Transfer</strong></td><td><span t-field="o.picking_id"/></td>
+                        <td><strong>Status</strong></td><td><span t-field="o.quality_state"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Product</strong></td><td><span t-field="o.product_id"/></td>
+                        <td><strong>QC Point</strong></td><td><span t-field="o.point_id"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lot</strong></td><td><span t-esc="o.lot_name or o.lot_id.name"/></td>
+                        <td><strong>Type</strong></td><td><span t-field="o.test_type"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Partner</strong></td><td><span t-field="o.partner_id"/></td>
+                        <td><strong>Team</strong></td><td><span t-field="o.team_id"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Checked By</strong></td><td><span t-field="o.user_id"/></td>
+                        <td><strong>Control Date</strong></td><td><span t-field="o.control_date"/></td>
+                    </tr>
+                </table>
+
+                <h5>Hasil Pemeriksaan</h5>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Qty to Test</th><th>Yard Asal</th><th>Yard Counter</th>
+                            <th>Pass Qty</th><th>Fail Qty</th><th>Downgrade</th><th>Scrap</th><th>Sample</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span t-field="o.qty_to_test"/></td><td><span t-field="o.yard_asal"/></td>
+                            <td><span t-field="o.yard_counter_qty"/></td><td><span t-field="o.pass_qty"/></td>
+                            <td><span t-field="o.fail_qty"/></td><td><span t-field="o.qty_to_downgrade"/></td>
+                            <td><span t-field="o.qty_to_scrap"/></td><td><span t-field="o.qty_to_sample"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p t-if="o.test_type == 'measure'">
+                    <strong>Measure:</strong> <span t-field="o.measure"/> <span t-field="o.norm_unit"/>
+                    (toleransi <span t-field="o.tolerance_min"/> - <span t-field="o.tolerance_max"/>)
+                </p>
+                <p t-if="o.text_result"><strong>Result:</strong> <span t-field="o.text_result"/></p>
+
+                <t t-if="o.detail_ids">
+                    <h5>Inspeksi Kain (4 Point System)</h5>
+                    <p>
+                        Lebar: <span t-field="o.lebar_inch"/> inch &#160;|&#160;
+                        Akumulasi Poin: <span t-field="o.akumulasi_poin"/> &#160;|&#160;
+                        Nilai Grading: <span t-field="o.nilai_grading"/>
+                        <t t-if="o.nilai_grading_after"> &#160;|&#160; Setelah: <span t-field="o.nilai_grading_after"/></t>
+                    </p>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr><th>Posisi Cacat</th><th>Yard Ke</th><th>No. Cacat</th><th>Nilai Poin</th><th>Remarks</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.detail_ids" t-as="d">
+                                <td><span t-field="d.posisi_cacat"/></td><td><span t-field="d.yard_ke"/></td>
+                                <td><span t-field="d.no_cacat"/></td><td><span t-field="d.nilai_poin"/></td><td><span t-field="d.remarks"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <div t-if="o.note" class="mt-3"><strong>Message:</strong><div t-field="o.note"/></div>
+                <div t-if="o.picture" class="mt-3">
+                    <img t-att-src="image_data_uri(o.picture)" style="max-height: 300px;"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_qc_check">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="quality_control.report_qc_check_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

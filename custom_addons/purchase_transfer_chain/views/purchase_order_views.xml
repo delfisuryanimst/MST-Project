@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_view_form_inherit_transfer_chain" model="ir.ui.view">
+        <field name="name">purchase.order.view.form.inherit.transfer.chain</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase_stock.purchase_order_view_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]/button[@name='action_view_picking']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]/button[@name='action_view_picking']" position="after">
+                <button name="action_view_all_pickings"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-truck"
+                        invisible="all_picking_count == 0"
+                        groups="stock.group_stock_user">
+                    <field name="all_picking_count" widget="statinfo" string="Transfers"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

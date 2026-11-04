@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="qc_alert_view_tree" model="ir.ui.view">
+        <field name="name">qc.alert.tree</field>
+        <field name="model">qc.alert</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" string="Name"/>
+                <field name="title"/>
+                <field name="picking_id"/>
+                <field name="partner_id" string="Partner"/>
+                <field name="product_id"/>
+                <field name="lot_id" string="Lot Number"/>
+                <field name="create_date" string="Created on"/>
+                <field name="write_date" string="Last Updated on"/>
+                <field name="priority" widget="priority" optional="hide"/>
+                <field name="fail_qty" optional="hide"/>
+                <field name="team_id" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
+                <field name="stage_id" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="qc_alert_view_kanban" model="ir.ui.view">
+        <field name="name">qc.alert.kanban</field>
+        <field name="model">qc.alert</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id">
+                <field name="stage_id"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{kanban_color(record.color.raw_value)} oe_kanban_global_click">
+                            <div class="d-flex justify-content-between">
+                                <strong><field name="name"/></strong>
+                                <field name="priority" widget="priority"/>
+                            </div>
+                            <div><field name="title"/></div>
+                            <div><field name="product_id"/></div>
+                            <div><field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/></div>
+                            <div class="d-flex justify-content-end">
+                                <field name="user_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="qc_alert_view_form" model="ir.ui.view">
+        <field name="name">qc.alert.form</field>
+        <field name="model">qc.alert</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_check" type="object" class="oe_stat_button"
+                                icon="fa-check" string="Quality Checks" invisible="not check_id"/>
+                        <button name="action_view_conversions" type="object" class="oe_stat_button"
+                                icon="fa-arrow-down" invisible="conversion_count == 0">
+                            <field name="conversion_count" widget="statinfo" string="Downgrade"/>
+                        </button>
+                        <button name="action_view_scraps" type="object" class="oe_stat_button"
+                                icon="fa-arrows-v">
+                            <field name="scrap_count" widget="statinfo" string="Scrap"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="title" placeholder="Judul alert..."/>
+                            <field name="check_id" invisible="1"/>
+                            <field name="partner_id" string="Partner"/>
+                            <field name="picking_id"/>
+                            <field name="product_id"/>
+                            <field name="lot_id" string="Lot Number"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Created on"/>
+                            <field name="write_date" string="Last Updated on"/>
+                            <field name="team_id"/>
+                            <field name="user_id"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="date_close" invisible="not date_close"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description"/>
+                        </page>
+                        <page string="Corrective Actions" name="corrective_actions">
+                            <group>
+                                <group>
+                                    <label for="pass_qty"/>
+                                    <div class="o_row">
+                                        <field name="pass_qty"/>
+                                        <field name="uom_id" options="{'no_open': True}"/>
+                                    </div>
+                                    <label for="fail_qty"/>
+                                    <div class="o_row">
+                                        <field name="fail_qty"/>
+                                        <field name="uom_id" options="{'no_open': True}"/>
+                                    </div>
+                                </group>
+                            </group>
+                            <table class="table table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Actions</th>
+                                        <th>Proposed Qty</th>
+                                        <th>Proposed UoM</th>
+                                        <th>Executed Qty</th>
+                                        <th>Executed UoM</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><button name="action_create_downgrade" type="object" string="Downgrade"
+                                                    class="btn-primary w-100"/></td>
+                                        <td><field name="downgrade_proposed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                        <td><field name="downgrade_executed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><button name="action_create_scrap" type="object" string="Scrap"
+                                                    class="btn-primary w-100"/></td>
+                                        <td><field name="scrap_proposed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                        <td><field name="scrap_executed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><button name="action_create_return" type="object" string="Return"
+                                                    class="btn-primary w-100"/></td>
+                                        <td><field name="return_proposed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                        <td/>
+                                        <td/>
+                                    </tr>
+                                    <tr>
+                                        <td><button name="action_create_transfer" type="object" string="Transfer"
+                                                    class="btn-primary w-100"/></td>
+                                        <td><field name="transfer_proposed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                        <td/>
+                                        <td/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <label for="notes"/>
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="qc_alert_view_search" model="ir.ui.view">
+        <field name="name">qc.alert.search</field>
+        <field name="model">qc.alert</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="title"/>
+                <field name="picking_id"/>
+                <field name="product_id"/>
+                <field name="tag_ids"/>
+                <field name="partner_id"/>
+                <filter name="my" string="My Alerts" domain="[('user_id', '=', uid)]"/>
+                <filter name="picking" string="Inventory" domain="[('picking_id', '!=', False)]"/>
+                <filter name="open" string="Open" domain="[('stage_id.done', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_inventory" string="Inventory" context="{'group_by': 'picking_id'}"/>
+                    <filter name="group_team" string="Team" context="{'group_by': 'team_id'}"/>
+                    <filter name="group_stage" string="Stage" context="{'group_by': 'stage_id'}"/>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="qc_alert_view_pivot" model="ir.ui.view">
+        <field name="name">qc.alert.pivot</field>
+        <field name="model">qc.alert</field>
+        <field name="arch" type="xml">
+            <pivot string="Quality Alerts">
+                <field name="team_id" type="row"/>
+                <field name="stage_id" type="col"/>
+                <field name="fail_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="qc_alert_action" model="ir.actions.act_window">
+        <field name="name">Quality Alerts</field>
+        <field name="res_model">qc.alert</field>
+        <field name="view_mode">tree,kanban,form,pivot</field>
+    </record>
+
+    <record id="qc_alert_inventory_action" model="ir.actions.act_window">
+        <field name="name">Inventory Quality Alerts</field>
+        <field name="res_model">qc.alert</field>
+        <field name="view_mode">tree,kanban,form,pivot</field>
+        <field name="domain">[('picking_id', '!=', False)]</field>
+        <field name="context">{'search_default_group_inventory': 1}</field>
+    </record>
+
+    <record id="qc_alert_report_action" model="ir.actions.act_window">
+        <field name="name">Quality Alert Analysis</field>
+        <field name="res_model">qc.alert</field>
+        <field name="view_mode">pivot,tree,form</field>
+        <field name="context">{'search_default_picking': 1}</field>
+    </record>
+
+    <record id="qc_alert_report_list_action" model="ir.actions.act_window">
+        <field name="name">Quality Alert Report</field>
+        <field name="res_model">qc.alert</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_picking': 1, 'search_default_group_stage': 1}</field>
+    </record>
+</odoo>

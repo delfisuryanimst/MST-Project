@@ -1,0 +1,34 @@
+# Database & storage
+pgdata/
+pgsql/
+filestore/
+
+# Logs
+odoo.log
+*.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/settings.json
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Odoo core (besar, tidak perlu di-push jika sudah ada di package)
+# odoo/   <- uncomment ini jika tidak mau push odoo core
+
+# Temp files
+*.tmp
+*.bak
