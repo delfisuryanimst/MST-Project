@@ -12,6 +12,8 @@ class QcAlertWizard(models.TransientModel):
         domain="[('picking_id', '=', picking_id), ('quality_state', '=', 'fail')]",
         help="Produk (QC Failed) yang akan dibuatkan Quality Alert.",
     )
+    title = fields.Char(
+        string="Title", required=True, help="Judul untuk semua alert yang dibuat, mis. SCRAP atau DOWNGRADE.")
     team_id = fields.Many2one(
         "qc.team", string="Team", help="Tim yang ditugaskan menindaklanjuti kasus ini.")
 
@@ -32,6 +34,7 @@ class QcAlertWizard(models.TransientModel):
         vals_list = []
         for check in self.check_ids:
             vals = check._prepare_alert_vals()
+            vals["title"] = self.title
             if self.team_id:
                 vals["team_id"] = self.team_id.id
             vals_list.append(vals)

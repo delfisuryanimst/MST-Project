@@ -7,6 +7,7 @@
             <form string="Quality Alerts">
                 <group>
                     <field name="picking_id"/>
+                    <field name="title" placeholder="mis. SCRAP, DOWNGRADE..."/>
                     <field name="team_id"/>
                 </group>
                 <field name="check_ids" options="{'no_create': True}">

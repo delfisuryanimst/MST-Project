@@ -31,6 +31,15 @@
                     <field name="qc_alert_count" widget="statinfo" string="Quality Alerts"/>
                 </button>
             </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='picked']" position="before">
+                <field name="qty_a" optional="show"/>
+                <field name="qty_a_star" optional="show"/>
+                <field name="qty_b" optional="show"/>
+                <field name="qty_ao_a2" optional="show"/>
+                <field name="qty_a_grey_c_a1" optional="show"/>
+                <field name="qty_bs" optional="show"/>
+                <field name="k3l" optional="show"/>
+            </xpath>
             <xpath expr="//sheet" position="before">
                 <field name="qc_status" invisible="1"/>
                 <div class="alert alert-info mb-0 text-center" role="alert" invisible="qc_status != 'pending'">

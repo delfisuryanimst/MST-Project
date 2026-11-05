@@ -33,8 +33,6 @@ class QcAlert(models.Model):
     lot_id = fields.Many2one("stock.lot", string="Lot/Serial")
 
     description = fields.Html(string="Description")
-    action_corrective = fields.Html(string="Corrective Action")
-    action_preventive = fields.Html(string="Preventive Action")
     date_close = fields.Datetime(string="Date Closed", readonly=True)
     notes = fields.Text(string="Notes")
 
@@ -146,9 +144,9 @@ class QcAlert(models.Model):
         self.ensure_one()
         if not self.product_id:
             raise UserError(_("Isi Product terlebih dahulu."))
-        remaining = self.downgrade_proposed_qty - self.downgrade_executed_qty
-        if remaining <= 0:
-            raise UserError(_("Isi 'Downgrade (Proposed)' lebih besar dari qty yang sudah di-downgrade."))
+        # 'Downgrade (Proposed)' is only a suggestion: executed qty may exceed it (e.g. proposed 21, executed 307),
+        # so never block. The form starts with the remaining qty (0 when nothing is left) and the user types the rest.
+        remaining = max(self.downgrade_proposed_qty - self.downgrade_executed_qty, 0.0)
         consume_vals = {
             "line_type": "consume",
             "product_id": self.product_id.id,

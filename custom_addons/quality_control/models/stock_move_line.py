@@ -103,7 +103,8 @@ class StockMoveLine(models.Model):
         })
 
     def _action_open_qc_checks(self, checks):
+        # After Request QC, open every Quality Check of the same transfer(s), not only the new records.
         action = self.env["ir.actions.act_window"]._for_xml_id("quality_control.qc_check_action")
-        action["domain"] = [("id", "in", checks.ids)]
+        action["domain"] = [("picking_id", "in", checks.picking_id.ids)]
         action["context"] = {}
         return action

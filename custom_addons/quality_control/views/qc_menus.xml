@@ -41,9 +41,9 @@
     <menuitem id="menu_qc_report_alert" name="Quality Alert" parent="menu_qc_reporting_inventory"
               action="qc_alert_report_action" sequence="2"/>
     <menuitem id="menu_qc_report_check_list" name="Quality Check Report" parent="menu_qc_reporting_inventory"
-              action="qc_check_report_list_action" sequence="3"/>
+              action="qc_check_report_wizard_action" sequence="3"/>
     <menuitem id="menu_qc_report_alert_list" name="Quality Alert Report" parent="menu_qc_reporting_inventory"
-              action="qc_alert_report_list_action" sequence="4"/>
+              action="qc_alert_report_wizard_action" sequence="4"/>
     <menuitem id="menu_qc_team_overview" name="QC Team Overview" parent="menu_qc_reporting"
               action="qc_team_dashboard_action" sequence="10" active="False"/>
 

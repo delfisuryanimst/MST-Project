@@ -1,6 +1,6 @@
 {
     "name": "Quality Control",
-    "version": "17.0.1.1.4",
+    "version": "17.0.1.1.5",
     "summary": "Quality Checks, QC Points, Quality Alerts, QC Teams",
     "description": """
 Quality Control (Community)
@@ -41,9 +41,11 @@ Kerangka modul Quality Control berdasarkan User Guidebook "Quality Control v17":
         "views/stock_move_line_views.xml",
         "views/qc_dashboard_views.xml",
         "wizard/qc_alert_wizard_views.xml",
+        "wizard/qc_report_wizard_views.xml",
         "views/qc_menus.xml",
         # reports
         "report/qc_check_report.xml",
+        "report/qc_summary_reports.xml",
     ],
     "application": True,
     "installable": True,

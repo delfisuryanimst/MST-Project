@@ -40,6 +40,7 @@ export class GenerateLotsDialog extends Component {
             [
                 {
                     ...move.context,
+                    move_id: move.resId,
                     default_product_id: move.data.product_id[0],
                     default_location_dest_id: move.data.location_dest_id[0],
                     default_location_id: move.data.location_id[0],

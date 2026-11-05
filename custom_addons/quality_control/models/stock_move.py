@@ -6,6 +6,15 @@ class StockMove(models.Model):
 
     qc_conversion_id = fields.Many2one("qc.conversion", string="Stock Conversion", index=True, copy=False)
 
+    # Grading quantities per product line (Operations tab on transfers)
+    qty_a = fields.Float(string="Qty A", digits=(16, 2))
+    qty_a_star = fields.Float(string="Qty A*", digits=(16, 2))
+    qty_b = fields.Float(string="Qty B", digits=(16, 2))
+    qty_ao_a2 = fields.Float(string="Qty AO / A2", digits=(16, 2))
+    qty_a_grey_c_a1 = fields.Float(string="A Grey C / A1", digits=(16, 2))
+    qty_bs = fields.Float(string="Qty BS", digits=(16, 2))
+    k3l = fields.Char(string="K3L")
+
     def _action_confirm(self, merge=True, merge_into=False):
         # Hooked on moves so follow-up transfers of 2/3-step routes are covered too.
         moves = super()._action_confirm(merge=merge, merge_into=merge_into)

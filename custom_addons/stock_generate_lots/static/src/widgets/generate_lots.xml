@@ -17,7 +17,7 @@
                         </div>
                         <div class="o_cell flex-grow-1 flex-sm-grow-0">
                             <div class="o_field_widget o_field_char">
-                                <input placeholder="SN-0001" class="o_input" t-ref="firstLot" id="first_lot_0" type="text"/>
+                                <input placeholder="Kosongkan untuk otomatis" class="o_input" t-ref="firstLot" id="first_lot_0" type="text"/>
                             </div>
                         </div>
                     </div>

@@ -63,10 +63,7 @@ class QcConversion(models.Model):
                 raise UserError(_("Qty harus lebih besar dari 0: %s", line.product_id.display_name))
             if line.tracking != "none" and not line.lot_id:
                 raise UserError(_("Lot wajib diisi untuk: %s", line.product_id.display_name))
-        if round(self.consume_total - self.produce_total, 2) != 0:
-            raise UserError(_(
-                "Total To be Consumed (%(consumed).2f) harus sama dengan total To be Produced (%(produced).2f).",
-                consumed=self.consume_total, produced=self.produce_total))
+        # Totals may differ (live allows consumed != produced), so there is no equality check here.
 
     def action_validate(self):
         self = self.with_context(clean_context(self.env.context))

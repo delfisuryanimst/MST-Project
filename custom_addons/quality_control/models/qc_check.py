@@ -85,6 +85,24 @@ class QcCheck(models.Model):
     alert_ids = fields.One2many("qc.alert", "check_id", string="Quality Alerts")
     alert_count = fields.Integer(compute="_compute_alert_count")
 
+    # Selection filters on the form: products of the transfer, matching On Demand QC Points
+    product_domain_ids = fields.Many2many("product.product", compute="_compute_product_domain_ids")
+    point_domain_ids = fields.Many2many("qc.point", compute="_compute_point_domain_ids")
+
+    @api.depends("picking_id.move_ids.product_id")
+    def _compute_product_domain_ids(self):
+        for check in self:
+            check.product_domain_ids = check.picking_id.move_ids.product_id
+
+    @api.depends("picking_type_id", "picking_id.picking_type_id", "product_id", "company_id")
+    def _compute_point_domain_ids(self):
+        for check in self:
+            picking_type = check.picking_id.picking_type_id or check.picking_type_id
+            points = self.env["qc.point"]._get_points(picking_type, "on_demand", check.company_id)
+            if check.product_id:
+                points = points.filtered(lambda p: p._applies_to_product(check.product_id))
+            check.point_domain_ids = points
+
     @api.depends("picking_id.partner_id", "picking_id.move_ids.move_orig_ids.picking_id.partner_id")
     def _compute_partner_id(self):
         for check in self:
@@ -192,8 +210,8 @@ class QcCheck(models.Model):
 
     def _prepare_alert_vals(self):
         self.ensure_one()
+        # Title is typed by the user (demo: required, no default), e.g. "SCRAP", "DOWNGRADE".
         return {
-            "title": _("QC Fail - %s", self.product_id.display_name),
             "check_id": self.id,
             "picking_id": self.picking_id.id,
             "partner_id": self.partner_id.id,
@@ -204,6 +222,23 @@ class QcCheck(models.Model):
             "downgrade_proposed_qty": self.qty_to_downgrade,
             "scrap_proposed_qty": self.qty_to_scrap,
             "description": self.note or (self.description and "<p>%s</p>" % self.description),
+        }
+
+    def action_create_alert(self):
+        """Create a Quality Alert straight from a failed check (demo: 'Quality Alerts' button)."""
+        self.ensure_one()
+        if self.quality_state != "fail":
+            raise UserError(_("Quality Alert hanya bisa dibuat dari Quality Check yang Failed."))
+        if self.alert_ids:
+            return self.action_view_alerts()
+        # Open an unsaved, prefilled form so the user must type the Title before saving.
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Quality Alert"),
+            "res_model": "qc.alert",
+            "view_mode": "form",
+            "views": [(False, "form")],
+            "context": {"default_%s" % key: value for key, value in self._prepare_alert_vals().items()},
         }
 
     def action_view_alerts(self):

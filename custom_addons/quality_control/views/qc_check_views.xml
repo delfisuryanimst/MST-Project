@@ -49,6 +49,8 @@
                 <header>
                     <button name="action_validate" string="Validate" type="object" class="btn-primary"
                             invisible="quality_state != 'todo'"/>
+                    <button name="action_create_alert" string="Quality Alerts" type="object" class="btn-primary"
+                            invisible="quality_state != 'fail' or alert_count or not picking_id"/>
                     <button name="action_print" string="Print" type="object"/>
                     <button name="action_reset" string="Reset to Draft" type="object"
                             invisible="quality_state == 'todo'" groups="quality_control.group_qc_manager"/>
@@ -69,12 +71,16 @@
                         <group name="check">
                             <field name="lot_id" invisible="1"/>
                             <field name="move_line_id" invisible="1"/>
+                            <field name="product_domain_ids" invisible="1"/>
+                            <field name="point_domain_ids" invisible="1"/>
 
                             <!-- From the detailed operation: only QC Administrator may edit (FDD) -->
                             <field name="product_id" groups="quality_control.group_qc_manager"
-                                   readonly="quality_state != 'todo'"/>
+                                   readonly="quality_state != 'todo'"
+                                   domain="[('id', 'in', product_domain_ids)] if picking_id else []"/>
                             <field name="product_id" groups="!quality_control.group_qc_manager"
-                                   readonly="quality_state != 'todo' or move_line_id"/>
+                                   readonly="quality_state != 'todo' or move_line_id"
+                                   domain="[('id', 'in', product_domain_ids)] if picking_id else []"/>
                             <field name="lot_name" groups="quality_control.group_qc_manager"
                                    readonly="quality_state != 'todo'"/>
                             <field name="lot_name" groups="!quality_control.group_qc_manager"
@@ -92,7 +98,8 @@
                                 <field name="yard_asal" readonly="quality_state != 'todo'"/>
                                 <field name="product_uom_id" options="{'no_open': True}"/>
                             </div>
-                            <field name="point_id" string="QC Point" readonly="quality_state != 'todo'"/>
+                            <field name="point_id" string="QC Point" readonly="quality_state != 'todo'"
+                                   domain="[('id', 'in', point_domain_ids)] if picking_id else []"/>
                             <field name="test_type" readonly="quality_state != 'todo'"/>
 
                             <!-- Pass / Fail -->
@@ -310,12 +317,5 @@
         <field name="view_id" ref="qc_check_view_pivot_report"/>
         <field name="search_view_id" ref="qc_check_view_search_report"/>
         <field name="context">{'search_default_picking_filter': 1}</field>
-    </record>
-
-    <record id="qc_check_report_list_action" model="ir.actions.act_window">
-        <field name="name">Quality Check Report</field>
-        <field name="res_model">qc.check</field>
-        <field name="view_mode">tree,form</field>
-        <field name="context">{'search_default_picking_filter': 1, 'search_default_group_picking_type': 1}</field>
     </record>
 </odoo>

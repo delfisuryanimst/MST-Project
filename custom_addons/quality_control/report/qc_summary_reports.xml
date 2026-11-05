@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Quality Check Report (from wizard) -->
+    <record id="action_report_qc_check_summary" model="ir.actions.report">
+        <field name="name">Quality Check Report</field>
+        <field name="model">qc.check.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">quality_control.report_qc_check_summary</field>
+        <field name="report_file">quality_control.report_qc_check_summary</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <template id="report_qc_check_summary">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2 class="text-center mb-0" style="color: #000;">Quality Check Report</h2>
+                    <p class="text-center mb-4" style="color: #000;">
+                        <strong>Date From :</strong><span t-esc="wizard.date_from"/>
+                        <strong>To :</strong><span t-esc="wizard.date_to"/>
+                    </p>
+                    <!-- As in the demo: Group By Product = heading picking + Product column;
+                         Group By Picking = heading product + Picking column; none = one table with both. -->
+                    <t t-set="show_product" t-value="wizard.group_by != 'picking'"/>
+                    <t t-set="show_picking" t-value="wizard.group_by != 'product'"/>
+                    <t t-foreach="groups" t-as="group">
+                        <h6 t-if="group['title']" class="text-center fw-bold mt-3 mb-1" style="color: #000;">
+                            <span t-esc="group['title']"/>
+                        </h6>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th style="color: #000; font-weight: bold;">Sr.</th>
+                                    <th t-if="show_product" class="text-center" style="color: #000; font-weight: bold;">Product</th>
+                                    <th t-if="show_picking" class="text-center" style="color: #000; font-weight: bold;">
+                                        <t t-if="wizard.group_by">Picking</t><t t-else="">Picking Ref.</t>
+                                    </th>
+                                    <th class="text-center" style="color: #000; font-weight: bold;">Date</th>
+                                    <th class="text-center" style="color: #000; font-weight: bold;">QC Point</th>
+                                    <th class="text-center" style="color: #000; font-weight: bold;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="group['checks']" t-as="c"
+                                    t-attf-style="color: {{ 'red' if c.quality_state == 'fail' else 'green' }};">
+                                    <td><span t-esc="c_index + 1"/></td>
+                                    <td t-if="show_product"><span t-esc="c.product_id.display_name"/></td>
+                                    <td t-if="show_picking"><span t-esc="c.picking_id.name"/></td>
+                                    <td><span t-esc="c.control_date and c.control_date.date()"/></td>
+                                    <td><span t-esc="c.point_id.name"/></td>
+                                    <td><span t-esc="'Fail' if c.quality_state == 'fail' else 'Pass'"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Quality Alert Report (from wizard) -->
+    <record id="action_report_qc_alert_summary" model="ir.actions.report">
+        <field name="name">Quality Alert Report</field>
+        <field name="model">qc.alert.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">quality_control.report_qc_alert_summary</field>
+        <field name="report_file">quality_control.report_qc_alert_summary</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <template id="report_qc_alert_summary">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2 class="text-center" style="color: #000;">Quality Alert Report</h2>
+                    <h5 class="text-center fw-bold mb-4">
+                        <span t-esc="wizard.date_from"/> To <span t-esc="wizard.date_to"/>
+                    </h5>
+                    <t t-foreach="groups" t-as="group">
+                        <h6 class="text-center fw-bold mt-4 mb-1">
+                            Responsible Person: <span t-esc="group['user'].name or 'Undefined'"/>
+                        </h6>
+                        <table class="table table-sm table-bordered text-center" style="color: #000;">
+                            <thead>
+                                <tr>
+                                    <th style="color: #000; font-weight: bold;">Sr. No.</th>
+                                    <th style="color: #000; font-weight: bold;">Alert Ref No.</th>
+                                    <th style="color: #000; font-weight: bold;">Title</th>
+                                    <th style="color: #000; font-weight: bold;">Create Date</th>
+                                    <th style="color: #000; font-weight: bold;">Product</th>
+                                    <th style="color: #000; font-weight: bold;">Partner</th>
+                                    <th style="color: #000; font-weight: bold;">Picking Ref.</th>
+                                    <th style="color: #000; font-weight: bold;">Team</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="group['alerts']" t-as="a">
+                                    <td><span t-esc="a_index + 1"/></td>
+                                    <td><span t-field="a.name"/></td>
+                                    <td><span t-field="a.title"/></td>
+                                    <td><span t-field="a.create_date" t-options="{'widget': 'date'}"/></td>
+                                    <td><span t-field="a.product_id"/></td>
+                                    <td><span t-field="a.partner_id"/></td>
+                                    <td><span t-field="a.picking_id"/></td>
+                                    <td><span t-field="a.team_id"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
