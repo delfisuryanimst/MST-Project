@@ -59,7 +59,6 @@
                             </div>
                         </div>
                     </t>
-                    <!-- Odoo 17: the three-dot menu of the card (Settings + color picker), QC administrators only -->
                     <t t-name="kanban-menu" groups="quality_control.group_qc_manager">
                         <a role="menuitem" type="edit" class="dropdown-item">Settings</a>
                         <ul class="oe_kanban_colorpicker" data-field="color" role="menu"/>

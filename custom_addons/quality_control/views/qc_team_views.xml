@@ -31,7 +31,6 @@
         </field>
     </record>
 
-    <!-- QC Team Overview: kanban per team -->
     <record id="qc_team_view_kanban" model="ir.ui.view">
         <field name="name">qc.team.kanban.dashboard</field>
         <field name="model">qc.team</field>

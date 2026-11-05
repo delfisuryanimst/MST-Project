@@ -10,13 +10,13 @@ class QcReportWizardMixin(models.AbstractModel):
 
     date_from = fields.Date(string="Start Date", required=True, default=lambda self: fields.Date.today().replace(day=1))
     date_to = fields.Date(string="End Date", required=True, default=fields.Date.context_today)
-    product_ids = fields.Many2many("product.product", string="Product")
+    product_ids = fields.Many2many("product.product")
 
     @api.constrains("date_from", "date_to")
     def _check_dates(self):
         for wizard in self:
             if wizard.date_from > wizard.date_to:
-                raise ValidationError(_("Start Date tidak boleh setelah End Date."))
+                raise ValidationError(_("Start Date cannot be after End Date."))
 
     def _date_domain(self, field_name):
         """Inclusive date range on a datetime field (whole days)."""
@@ -25,9 +25,9 @@ class QcReportWizardMixin(models.AbstractModel):
         end = datetime.combine(self.date_to + timedelta(days=1), time.min)
         return [(field_name, ">=", start), (field_name, "<", end)]
 
-    def _print(self, report_xmlid, records):
-        if not records:
-            raise UserError(_("Tidak ada data untuk filter yang dipilih."))
+    def _print(self, report_xmlid, records, allow_empty=False):
+        if not records and not allow_empty:
+            raise UserError(_("No data found for the selected filters."))
         data = {"wizard_id": self.id, "record_ids": records.ids}
         return self.env.ref(report_xmlid).report_action(self, data=data)
 
@@ -38,8 +38,8 @@ class QcCheckReportWizard(models.TransientModel):
     _description = "Quality Check Report"
 
     group_by = fields.Selection(
-        [("picking", "Picking Type"), ("product", "Product")], string="Group By",
-        help="Kosongkan untuk satu tabel tanpa pengelompokan.")
+        [("picking", "Picking Type"), ("product", "Product")],
+        help="Leave empty for a single table without grouping.")
     state = fields.Selection(
         [("pass", "Pass"), ("fail", "Fail"), ("both", "Both")], string="Status", default="both", required=True)
 
@@ -61,7 +61,7 @@ class QcAlertReportWizard(models.TransientModel):
     _inherit = "qc.report.wizard.mixin"
     _description = "Quality Alert Report"
 
-    stage_id = fields.Many2one("qc.alert.stage", string="Stage", required=True)
+    stage_id = fields.Many2one("qc.alert.stage", required=True)
     user_ids = fields.Many2many("res.users", string="Responsible Users")
 
     def _get_records(self):
@@ -75,11 +75,8 @@ class QcAlertReportWizard(models.TransientModel):
 
     def print_report(self):
         self.ensure_one()
-        records = self._get_records()
-        if not records and not self.user_ids:
-            raise UserError(_("Tidak ada data untuk filter yang dipilih."))
-        data = {"wizard_id": self.id, "record_ids": records.ids}
-        return self.env.ref("quality_control.action_report_qc_alert_summary").report_action(self, data=data)
+        return self._print(
+            "quality_control.action_report_qc_alert_summary", self._get_records(), allow_empty=bool(self.user_ids))
 
 
 class ReportQcCheckSummary(models.AbstractModel):
@@ -94,8 +91,8 @@ class ReportQcCheckSummary(models.AbstractModel):
         if not wizard.group_by:
             groups = [{"title": False, "checks": checks}]
         else:
-            # One table per group; Sr. restarts in every table. Mirrors the demo (sh.quality):
-            # "Product" lists products under each picking, "Picking" lists pickings under each product.
+            # One table per group, numbering restarts in each. Group By "Product" lists products under each
+            # picking; "Picking Type" lists pickings under each product.
             field = "picking_id" if wizard.group_by == "product" else "product_id"
             grouped = {}
             for check in checks:
@@ -117,7 +114,6 @@ class ReportQcAlertSummary(models.AbstractModel):
         data = data or {}
         wizard = self.env["qc.alert.report.wizard"].browse(data.get("wizard_id"))
         alerts = self.env["qc.alert"].browse(data.get("record_ids", []))
-        # One section per Responsible Person; selected users are listed even without alerts.
         users = wizard.user_ids or alerts.user_id
         groups = [{"user": user, "alerts": alerts.filtered(lambda a, u=user: a.user_id == u)}
                   for user in users.sorted("name")]

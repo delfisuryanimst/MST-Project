@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Reporting > Quality Check Report -->
     <record id="qc_check_report_wizard_view_form" model="ir.ui.view">
         <field name="name">qc.check.report.wizard.form</field>
         <field name="model">qc.check.report.wizard</field>
@@ -32,7 +31,6 @@
         <field name="target">new</field>
     </record>
 
-    <!-- Reporting > Quality Alert Report -->
     <record id="qc_alert_report_wizard_view_form" model="ir.ui.view">
         <field name="name">qc.alert.report.wizard.form</field>
         <field name="model">qc.alert.report.wizard</field>

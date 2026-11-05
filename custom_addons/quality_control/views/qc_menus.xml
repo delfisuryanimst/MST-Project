@@ -7,7 +7,6 @@
     <menuitem id="menu_qc_dashboard" name="Dashboard" parent="menu_qc_root"
               action="qc_dashboard_action" sequence="1"/>
 
-    <!-- All Operations -->
     <menuitem id="menu_qc_operations" name="All Operations" parent="menu_qc_root" sequence="10"/>
     <menuitem id="menu_qc_operations_inventory" name="Inventory" parent="menu_qc_operations" sequence="1"/>
     <menuitem id="menu_qc_picking_pending" name="Pending QC" parent="menu_qc_operations_inventory"
@@ -19,21 +18,18 @@
     <menuitem id="menu_qc_picking_passed" name="Passed QC" parent="menu_qc_operations_inventory"
               action="action_qc_picking_passed" sequence="4"/>
 
-    <!-- Quality Checks -->
     <menuitem id="menu_qc_control_checks" name="Quality Checks" parent="menu_qc_root" sequence="20"/>
     <menuitem id="menu_qc_check" name="Quality Check" parent="menu_qc_control_checks"
               action="qc_check_action" sequence="1"/>
     <menuitem id="menu_qc_check_inventory" name="Inventory Quality Check" parent="menu_qc_control_checks"
               action="qc_check_inventory_action" sequence="2"/>
 
-    <!-- Quality Alerts -->
     <menuitem id="menu_qc_control_alerts" name="Quality Alerts" parent="menu_qc_root" sequence="30"/>
     <menuitem id="menu_qc_alert" name="Quality Alerts" parent="menu_qc_control_alerts"
               action="qc_alert_action" sequence="1"/>
     <menuitem id="menu_qc_alert_inventory" name="Inventory Quality Alerts" parent="menu_qc_control_alerts"
               action="qc_alert_inventory_action" sequence="2"/>
 
-    <!-- Reporting -->
     <menuitem id="menu_qc_reporting" name="Reporting" parent="menu_qc_root" sequence="40"/>
     <menuitem id="menu_qc_reporting_inventory" name="Inventory" parent="menu_qc_reporting" sequence="1"/>
     <menuitem id="menu_qc_report_check" name="Quality Check" parent="menu_qc_reporting_inventory"
@@ -47,7 +43,6 @@
     <menuitem id="menu_qc_team_overview" name="QC Team Overview" parent="menu_qc_reporting"
               action="qc_team_dashboard_action" sequence="10" active="False"/>
 
-    <!-- Configuration -->
     <menuitem id="menu_qc_config" name="Configuration" parent="menu_qc_root" sequence="100"
               groups="quality_control.group_qc_manager"/>
     <menuitem id="menu_qc_team" name="QC Team" parent="menu_qc_config"

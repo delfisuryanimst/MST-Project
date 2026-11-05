@@ -17,7 +17,7 @@ class QcDashboard(models.Model):
     team_id = fields.Many2one("qc.team", string="QC Team", ondelete="cascade")
     picking_type_ids = fields.Many2many(
         "stock.picking.type", string="Operation Types",
-        help="Kosongkan untuk menghitung semua operation type.",
+        help="Leave empty to count all operation types.",
     )
     company_id = fields.Many2one("res.company", default=lambda self: self.env.company)
 

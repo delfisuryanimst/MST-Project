@@ -26,7 +26,6 @@
                 <field name="test_type" string="Type"/>
                 <field name="qty_to_scrap" string="BS" sum="Total"/>
 
-                <!-- Quantity columns (FDD) -->
                 <field name="yard_counter_qty" optional="hide" sum="Total"/>
                 <field name="difference_qty" optional="hide" sum="Total"/>
                 <field name="pass_qty" optional="hide" sum="Total"/>
@@ -71,16 +70,12 @@
                         <group name="check">
                             <field name="lot_id" invisible="1"/>
                             <field name="move_line_id" invisible="1"/>
-                            <field name="product_domain_ids" invisible="1"/>
-                            <field name="point_domain_ids" invisible="1"/>
 
-                            <!-- From the detailed operation: only QC Administrator may edit (FDD) -->
+                            <!-- Lines created from a detailed operation: only a QC Administrator may edit these -->
                             <field name="product_id" groups="quality_control.group_qc_manager"
-                                   readonly="quality_state != 'todo'"
-                                   domain="[('id', 'in', product_domain_ids)] if picking_id else []"/>
+                                   readonly="quality_state != 'todo'"/>
                             <field name="product_id" groups="!quality_control.group_qc_manager"
-                                   readonly="quality_state != 'todo' or move_line_id"
-                                   domain="[('id', 'in', product_domain_ids)] if picking_id else []"/>
+                                   readonly="quality_state != 'todo' or move_line_id"/>
                             <field name="lot_name" groups="quality_control.group_qc_manager"
                                    readonly="quality_state != 'todo'"/>
                             <field name="lot_name" groups="!quality_control.group_qc_manager"
@@ -98,11 +93,9 @@
                                 <field name="yard_asal" readonly="quality_state != 'todo'"/>
                                 <field name="product_uom_id" options="{'no_open': True}"/>
                             </div>
-                            <field name="point_id" string="QC Point" readonly="quality_state != 'todo'"
-                                   domain="[('id', 'in', point_domain_ids)] if picking_id else []"/>
+                            <field name="point_id" string="QC Point" readonly="quality_state != 'todo'"/>
                             <field name="test_type" readonly="quality_state != 'todo'"/>
 
-                            <!-- Pass / Fail -->
                             <field name="yard_counter_qty" invisible="test_type != 'pass_fail'"
                                    readonly="quality_state != 'todo'"/>
                             <field name="difference_qty" invisible="test_type != 'pass_fail'"/>
@@ -145,7 +138,6 @@
                         </group>
                     </group>
 
-                    <!-- Measurement -->
                     <group string="Measurement" invisible="test_type != 'measure'">
                         <label for="measure"/>
                         <div class="o_row">
@@ -160,17 +152,14 @@
                         </div>
                     </group>
 
-                    <!-- Take a picture -->
                     <group string="Picture" invisible="test_type != 'picture'">
                         <field name="picture" widget="image" readonly="quality_state != 'todo'"/>
                     </group>
 
-                    <!-- Text -->
                     <group string="Text Result" invisible="test_type != 'text'">
                         <field name="text_result" readonly="quality_state != 'todo'"/>
                     </group>
 
-                    <!-- Defect details (4 Point System) -->
                     <field name="detail_ids" readonly="quality_state != 'todo'">
                         <tree editable="bottom">
                             <field name="posisi_cacat"/>
@@ -276,7 +265,6 @@
         <field name="context">{'search_default_group_inventory': 1}</field>
     </record>
 
-    <!-- Reporting > Quality Check -->
     <record id="qc_check_view_pivot_report" model="ir.ui.view">
         <field name="name">qc.check.pivot.report</field>
         <field name="model">qc.check</field>
@@ -286,7 +274,7 @@
         </field>
     </record>
 
-    <!-- No Group By filters: the pivot "+" lists every field -->
+    <!-- Without Group By filters, the pivot "+" lists every field -->
     <record id="qc_check_view_search_report" model="ir.ui.view">
         <field name="name">qc.check.search.report</field>
         <field name="model">qc.check</field>

@@ -6,7 +6,7 @@ class QcTeam(models.Model):
     _description = "Quality Control Team"
     _order = "sequence, id"
 
-    name = fields.Char(string="Title", required=True, translate=True)
+    name = fields.Char(string="Title", translate=True)
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
     color = fields.Integer()

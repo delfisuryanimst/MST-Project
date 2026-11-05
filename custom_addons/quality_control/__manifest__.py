@@ -22,14 +22,11 @@ Kerangka modul Quality Control berdasarkan User Guidebook "Quality Control v17":
     "license": "LGPL-3",
     "depends": ["stock", "mail", "web"],
     "data": [
-        # security
         "security/qc_security.xml",
         "security/ir.model.access.csv",
-        # data
         "data/qc_sequence_data.xml",
         "data/qc_alert_stage_data.xml",
         "data/qc_dashboard_data.xml",
-        # views
         "views/qc_team_views.xml",
         "views/qc_point_views.xml",
         "views/qc_alert_stage_views.xml",
@@ -43,7 +40,6 @@ Kerangka modul Quality Control berdasarkan User Guidebook "Quality Control v17":
         "wizard/qc_alert_wizard_views.xml",
         "wizard/qc_report_wizard_views.xml",
         "views/qc_menus.xml",
-        # reports
         "report/qc_check_report.xml",
         "report/qc_summary_reports.xml",
     ],

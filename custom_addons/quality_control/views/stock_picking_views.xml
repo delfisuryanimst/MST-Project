@@ -64,7 +64,6 @@
         </field>
     </record>
 
-    <!-- All Operations -->
     <record id="action_qc_picking_all" model="ir.actions.act_window">
         <field name="name">QC Transfers</field>
         <field name="res_model">stock.picking</field>

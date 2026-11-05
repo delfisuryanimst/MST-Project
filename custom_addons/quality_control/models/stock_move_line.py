@@ -14,11 +14,11 @@ class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
 
     assignee_id = fields.Many2one(
-        "res.users", string="Assignee", copy=False,
+        "res.users", copy=False,
         domain=lambda self: [("groups_id", "in", self.env.ref("stock.group_stock_user").ids)],
-        help="User inventory yang ditugaskan menyimpan barang.",
+        help="Inventory user assigned to store the goods.",
     )
-    receiving_status = fields.Selection(RECEIVING_STATUS, string="Receiving Status", copy=False)
+    receiving_status = fields.Selection(RECEIVING_STATUS, copy=False)
     qc_request_status = fields.Selection(
         [("requested", "QC Requested")], string="QC Request Status", readonly=True, copy=False,
     )
@@ -44,11 +44,8 @@ class StockMoveLine(models.Model):
             "lot_name": self.lot_id.name or self.lot_name,
             "qty_to_test": self.quantity,
             "yard_asal": self.quantity,
-            "point_id": point.id,
-            "team_id": point._get_team().id,
-            "user_id": point.user_id.id or self.env.user.id,
-            "test_type": point.test_type,
             "company_id": self.company_id.id,
+            **point._prepare_check_vals(),
         }
 
     def _can_request_qc(self, point):
@@ -85,11 +82,11 @@ class StockMoveLine(models.Model):
 
     def _format_request_qc_error(self, skipped):
         reasons = {
-            "status": _("Receiving Status harus 'QC Request' atau 'Ready for QC':"),
-            "point": _("Tidak ada QC Point 'On Demand' untuk:"),
-            "max_tests": _("Sudah mencapai Maximum Number of Tests:"),
+            "status": _("Receiving Status must be 'QC Request' or 'Ready for QC':"),
+            "point": _("No 'On Demand' QC Point found for:"),
+            "max_tests": _("Maximum Number of Tests already reached:"),
         }
-        parts = [_("Tidak ada QC Form yang terbentuk.")]
+        parts = [_("No QC Form was created.")]
         for key, labels in skipped.items():
             if labels:
                 parts.append("%s\n- %s" % (reasons[key], "\n- ".join(labels)))
@@ -98,12 +95,11 @@ class StockMoveLine(models.Model):
     def _notify_skipped_lines(self, count):
         self.env["bus.bus"]._sendone(self.env.user.partner_id, "simple_notification", {
             "type": "warning",
-            "title": _("Sebagian baris dilewati"),
-            "message": _("%s baris tidak dibuatkan QC Form.", count),
+            "title": _("Some lines were skipped"),
+            "message": _("%s lines did not get a QC Form.", count),
         })
 
     def _action_open_qc_checks(self, checks):
-        # After Request QC, open every Quality Check of the same transfer(s), not only the new records.
         action = self.env["ir.actions.act_window"]._for_xml_id("quality_control.qc_check_action")
         action["domain"] = [("picking_id", "in", checks.picking_id.ids)]
         action["context"] = {}

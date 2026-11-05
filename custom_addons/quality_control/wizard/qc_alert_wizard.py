@@ -10,12 +10,10 @@ class QcAlertWizard(models.TransientModel):
     check_ids = fields.Many2many(
         "qc.check", string="Failed Quality Checks", required=True,
         domain="[('picking_id', '=', picking_id), ('quality_state', '=', 'fail')]",
-        help="Produk (QC Failed) yang akan dibuatkan Quality Alert.",
+        help="Failed QC products to create a Quality Alert for.",
     )
-    title = fields.Char(
-        string="Title", required=True, help="Judul untuk semua alert yang dibuat, mis. SCRAP atau DOWNGRADE.")
-    team_id = fields.Many2one(
-        "qc.team", string="Team", help="Tim yang ditugaskan menindaklanjuti kasus ini.")
+    title = fields.Char(required=True, help="Title for all created alerts, e.g. SCRAP or DOWNGRADE.")
+    team_id = fields.Many2one("qc.team", help="Team assigned to follow up on this case.")
 
     @api.model
     def default_get(self, fields_list):
@@ -30,7 +28,7 @@ class QcAlertWizard(models.TransientModel):
     def action_create_alerts(self):
         self.ensure_one()
         if not self.check_ids:
-            raise UserError(_("Pilih minimal satu produk yang akan dibuatkan Quality Alert."))
+            raise UserError(_("Select at least one product to create a Quality Alert for."))
         vals_list = []
         for check in self.check_ids:
             vals = check._prepare_alert_vals()

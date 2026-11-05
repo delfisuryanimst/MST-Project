@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Quality Check Report (from wizard) -->
     <record id="action_report_qc_check_summary" model="ir.actions.report">
         <field name="name">Quality Check Report</field>
         <field name="model">qc.check.report.wizard</field>
@@ -19,8 +18,7 @@
                         <strong>Date From :</strong><span t-esc="wizard.date_from"/>
                         <strong>To :</strong><span t-esc="wizard.date_to"/>
                     </p>
-                    <!-- As in the demo: Group By Product = heading picking + Product column;
-                         Group By Picking = heading product + Picking column; none = one table with both. -->
+                    <!-- Group By "Product": one table per picking; "Picking Type": one table per product; none: one table -->
                     <t t-set="show_product" t-value="wizard.group_by != 'picking'"/>
                     <t t-set="show_picking" t-value="wizard.group_by != 'product'"/>
                     <t t-foreach="groups" t-as="group">
@@ -58,7 +56,6 @@
         </t>
     </template>
 
-    <!-- Quality Alert Report (from wizard) -->
     <record id="action_report_qc_alert_summary" model="ir.actions.report">
         <field name="name">Quality Alert Report</field>
         <field name="model">qc.alert.report.wizard</field>

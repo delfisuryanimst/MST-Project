@@ -20,17 +20,15 @@ class QcPoint(models.Model):
     active = fields.Boolean(default=True)
     company_id = fields.Many2one("res.company", default=lambda self: self.env.company)
 
-    # Apply on
-    product_category_ids = fields.Many2many("product.category", string="Product Category")
-    product_ids = fields.Many2many("product.product", string="Product")
-    picking_type_ids = fields.Many2many("stock.picking.type", string="Picking Type", required=True)
+    product_category_ids = fields.Many2many("product.category")
+    product_ids = fields.Many2many("product.product")
+    picking_type_ids = fields.Many2many("stock.picking.type", required=True)
 
-    # Control
-    team_id = fields.Many2one("qc.team", string="Team", tracking=True)
+    team_id = fields.Many2one("qc.team", tracking=True)
     user_id = fields.Many2one("res.users", string="Responsible User", tracking=True)
     is_mandatory = fields.Boolean(
         string="QC Mandatory",
-        help="Jika dicentang, picking tidak bisa divalidasi sebelum Quality Check selesai.",
+        help="If checked, the transfer cannot be validated until the Quality Check is done.",
     )
     measure_frequency = fields.Selection(
         [("all", "All"), ("on_demand", "On Demand")],
@@ -38,20 +36,16 @@ class QcPoint(models.Model):
     )
     partial_test = fields.Float(
         string="Partial Test (%)", default=100.0,
-        help="Persentase dari qty produk yang akan dilakukan QC.",
+        help="Percentage of the product quantity that gets a QC.",
     )
-    partial_test_by = fields.Selection(
-        [("product", "Per Product"), ("lot", "Per Lot")],
-        string="Partial Test By", default="product",
-    )
+    partial_test_by = fields.Selection([("product", "Per Product"), ("lot", "Per Lot")], default="product")
     test_type = fields.Selection(TEST_TYPES, string="Type", default="pass_fail", required=True)
     max_tests = fields.Integer(string="Maximum Number of Tests Allowed", default=1)
 
-    # Measurement
-    norm = fields.Float(string="Norm")
+    norm = fields.Float()
     norm_unit = fields.Char(string="Unit of Measure", default="mm")
-    tolerance_min = fields.Float(string="Tolerance Min")
-    tolerance_max = fields.Float(string="Tolerance Max")
+    tolerance_min = fields.Float()
+    tolerance_max = fields.Float()
 
     note = fields.Html(string="Instructions")
     check_ids = fields.One2many("qc.check", "point_id", string="Quality Checks")
@@ -60,13 +54,13 @@ class QcPoint(models.Model):
     def _check_partial_test(self):
         for point in self:
             if not 0 < point.partial_test <= 100:
-                raise ValidationError(_("Partial Test harus antara 0 dan 100%."))
+                raise ValidationError(_("Partial Test must be between 0 and 100%."))
 
     @api.constrains("tolerance_min", "tolerance_max", "test_type")
     def _check_tolerance(self):
         for point in self:
             if point.test_type == "measure" and point.tolerance_min > point.tolerance_max:
-                raise ValidationError(_("Tolerance Min tidak boleh lebih besar dari Tolerance Max."))
+                raise ValidationError(_("Tolerance Min cannot be greater than Tolerance Max."))
 
     @api.model
     def _get_points(self, picking_type, frequency, company=None):
@@ -79,6 +73,16 @@ class QcPoint(models.Model):
         if company:
             domain.append(("company_id", "in", [False, company.id]))
         return self.sudo().search(domain)
+
+    def _prepare_check_vals(self):
+        """Values every new QC Check takes from its QC Point."""
+        self.ensure_one()
+        return {
+            "point_id": self.id,
+            "team_id": self._get_team().id,
+            "user_id": self.user_id.id or self.env.user.id,
+            "test_type": self.test_type,
+        }
 
     def _get_team(self):
         self.ensure_one()

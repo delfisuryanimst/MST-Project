@@ -119,13 +119,10 @@ class StockPicking(models.Model):
             "lot_id": move_line.lot_id.id,
             "lot_name": move_line.lot_name or move_line.lot_id.name,
             "product_id": move.product_id.id,
-            "point_id": point.id,
-            "team_id": point._get_team().id,
-            "user_id": point.user_id.id or self.env.user.id,
-            "yard_asal": qty_to_test,  # TSD: Yard Asal = Qty to Test
-            "test_type": point.test_type,
+            "yard_asal": qty_to_test,  # Yard Asal always equals Qty to Test
             "qty_to_test": qty_to_test,
             "company_id": self.company_id.id,
+            **point._prepare_check_vals(),
         }
 
     def button_validate(self):
@@ -155,7 +152,7 @@ class StockPicking(models.Model):
         if pending:
             raise UserError(_(
                 "Product(s) Quality Control Still Pending.\n"
-                "Selesaikan Quality Check berikut sebelum memvalidasi %(picking)s:\n%(lines)s",
+                "Complete the following Quality Checks before validating %(picking)s:\n%(lines)s",
                 picking=self.name,
                 lines="\n".join("- %s: %s" % (c.name, c.product_id.display_name) for c in pending),
             ))
@@ -190,6 +187,6 @@ class StockPicking(models.Model):
         lines = self.move_line_ids.filtered(lambda line: line.receiving_status in QC_REQUEST_ALLOWED)
         if not lines:
             raise UserError(_(
-                "Belum ada baris Detailed Operations dengan Receiving Status 'QC Request' atau "
-                "'Ready for QC'. Isi Receiving Status di Detailed Operations terlebih dahulu."))
+                "No Detailed Operations line has Receiving Status 'QC Request' or 'Ready for QC'. "
+                "Set the Receiving Status in Detailed Operations first."))
         return lines.action_request_qc()

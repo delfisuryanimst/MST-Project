@@ -12,38 +12,35 @@ class QcAlert(models.Model):
         return self.env["qc.alert.stage"].search([], limit=1)
 
     name = fields.Char(string="Reference", default=lambda self: _("New"), copy=False, readonly=True)
-    title = fields.Char(string="Title")
+    title = fields.Char()
     company_id = fields.Many2one("res.company", default=lambda self: self.env.company)
     stage_id = fields.Many2one(
-        "qc.alert.stage", string="Stage", default=_default_stage,
+        "qc.alert.stage", default=_default_stage,
         group_expand="_read_group_stage_ids", tracking=True, ondelete="restrict",
     )
-    priority = fields.Selection(
-        [("0", "Normal"), ("1", "Low"), ("2", "High"), ("3", "Very High")], default="0")
+    priority = fields.Selection([("0", "Normal"), ("1", "Low"), ("2", "High"), ("3", "Very High")], default="0")
     tag_ids = fields.Many2many("qc.alert.tag", string="Tags")
-    team_id = fields.Many2one("qc.team", string="Team", tracking=True)
-    user_id = fields.Many2one("res.users", string="Responsible", tracking=True,
-                              default=lambda self: self.env.user)
+    team_id = fields.Many2one("qc.team", tracking=True)
+    user_id = fields.Many2one("res.users", string="Responsible", tracking=True, default=lambda self: self.env.user)
     color = fields.Integer()
     partner_id = fields.Many2one("res.partner", string="Vendor/Partner")
 
     check_id = fields.Many2one("qc.check", string="Quality Check")
     picking_id = fields.Many2one("stock.picking", string="Picking Ref.")
-    product_id = fields.Many2one("product.product", string="Product")
+    product_id = fields.Many2one("product.product")
     lot_id = fields.Many2one("stock.lot", string="Lot/Serial")
 
-    description = fields.Html(string="Description")
+    description = fields.Html()
     date_close = fields.Datetime(string="Date Closed", readonly=True)
-    notes = fields.Text(string="Notes")
+    notes = fields.Text()
 
-    # Quantities & follow-up
     uom_id = fields.Many2one(related="product_id.uom_id", string="UoM")
     pass_qty = fields.Float(
         string="Pass Quantity", compute="_compute_check_qty", store=True, digits=(16, 2),
-        help="Diambil dari Pass Quantity di Quality Check.")
+        help="Taken from the Pass Quantity of the Quality Check.")
     fail_qty = fields.Float(
         string="Fail Quantity", compute="_compute_check_qty", store=True, digits=(16, 2),
-        help="Diambil dari Fail Quantity di Quality Check.")
+        help="Taken from the Fail Quantity of the Quality Check.")
     downgrade_proposed_qty = fields.Float(string="Downgrade (Proposed)")
     scrap_proposed_qty = fields.Float(string="Scrap (Proposed)")
     return_proposed_qty = fields.Float(string="Return (Proposed)")
@@ -87,12 +84,13 @@ class QcAlert(models.Model):
     def action_create_scrap(self):
         self.ensure_one()
         if not self.product_id:
-            raise UserError(_("Isi Product terlebih dahulu."))
+            raise UserError(_("Select a product first."))
         if not self.scrap_proposed_qty:
-            raise UserError(_("Isi 'Scrap (Proposed)' terlebih dahulu."))
+            raise UserError(_("Enter 'Scrap (Proposed)' first."))
         remaining = self.scrap_proposed_qty - self.scrap_executed_qty
         if remaining <= 0:
-            raise UserError(_("Qty scrap sudah mencapai atau melebihi 'Scrap (Proposed)'. Tidak ada sisa yang perlu di-scrap."))
+            raise UserError(_(
+                "The scrapped quantity has already reached 'Scrap (Proposed)'. Nothing is left to scrap."))
         return {
             "type": "ir.actions.act_window",
             "name": _("Scrap"),
@@ -127,10 +125,10 @@ class QcAlert(models.Model):
         return action
 
     def _action_not_available(self):
-        raise UserError(_("Aksi ini belum tersedia di Odoo lokal. Untuk sementara gunakan Scrap."))
+        raise UserError(_("This action is not available yet. Please use Scrap for now."))
 
     def _get_lot_location(self):
-        """Lokasi internal tempat lot ini berada sekarang; kalau tidak ketemu, lokasi tujuan picking."""
+        """Internal location where the lot sits now; falls back to the picking destination."""
         self.ensure_one()
         quant = self.env["stock.quant"].search([
             ("product_id", "=", self.product_id.id),
@@ -143,9 +141,8 @@ class QcAlert(models.Model):
     def action_create_downgrade(self):
         self.ensure_one()
         if not self.product_id:
-            raise UserError(_("Isi Product terlebih dahulu."))
-        # 'Downgrade (Proposed)' is only a suggestion: executed qty may exceed it (e.g. proposed 21, executed 307),
-        # so never block. The form starts with the remaining qty (0 when nothing is left) and the user types the rest.
+            raise UserError(_("Select a product first."))
+        # Proposed is only a suggestion (executed may exceed it), so never block; the user types the rest.
         remaining = max(self.downgrade_proposed_qty - self.downgrade_executed_qty, 0.0)
         consume_vals = {
             "line_type": "consume",

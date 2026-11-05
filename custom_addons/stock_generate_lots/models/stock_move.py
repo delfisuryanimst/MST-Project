@@ -5,11 +5,10 @@ from odoo.exceptions import UserError
 from odoo.tools import float_compare, float_round
 
 MAX_GENERATED_LOTS = 2000
-# Format seen on real receipts: P03949.03048008.01.0001.16404
-#   PO name . product internal reference . PO line . lot running no. . lot quantity x 100
-LINE_DIGITS = 2  # .01  (position of the line in the PO)
-SEQUENCE_DIGITS = 4  # .0001 (running number of the lot, starts at 0001)
-QTY_DIGITS = 5  # .16404 (164.04 -> quantity x 100, no decimal point)
+# Lot name: <PO>.<product code>.<PO line>.<lot no.>.<qty x 100>, e.g. P03949.03048008.01.0001.16404
+LINE_DIGITS = 2
+SEQUENCE_DIGITS = 4
+QTY_DIGITS = 5
 
 
 class StockMove(models.Model):
@@ -22,7 +21,7 @@ class StockMove(models.Model):
         name = (purchase_line.order_id.name if purchase_line else self.picking_id.origin) or ""
         if not name.strip():
             raise UserError(_(
-                "Nomor lot otomatis butuh Receipt yang berasal dari PO. Isi First Lot Number secara manual."))
+                "Automatic lot numbers need a receipt that comes from a PO. Enter the First Lot Number manually."))
         return name.strip()
 
     def _lot_line_segment(self):
@@ -42,7 +41,7 @@ class StockMove(models.Model):
         """<PO>.<product code>.<line>.<running no.>.<lot quantity x 100>, e.g. P03949.03048008.01.0001.16404"""
         self.ensure_one()
         if not product.default_code:
-            raise UserError(_("Produk %s belum punya Internal Reference.", product.display_name))
+            raise UserError(_("Product %s has no Internal Reference.", product.display_name))
         prefix = "%s.%s.%s" % (self._lot_po_segment(), product.default_code, self._lot_line_segment())
         return [
             "%s.%s.%s" % (prefix, str(index).zfill(SEQUENCE_DIGITS), self._lot_qty_segment(quantity))
@@ -58,17 +57,17 @@ class StockMove(models.Model):
         first_lot = (first_lot or "").strip()
         move = self.browse(context.get("move_id")).exists()
         if not first_lot and not move:
-            raise UserError(_("Isi First Lot Number."))
+            raise UserError(_("Enter the First Lot Number."))
         if qty_per_lot <= 0 or qty_received <= 0:
-            raise UserError(_("Quantity per Lot dan Quantity Received harus lebih besar dari 0."))
+            raise UserError(_("Quantity per Lot and Quantity Received must be greater than 0."))
 
         product = self.env["product.product"].browse(context.get("default_product_id"))
         rounding = product.uom_id.rounding or 0.01
         lot_count = ceil(float_round(qty_received / qty_per_lot, precision_digits=6))
         if lot_count > MAX_GENERATED_LOTS:
             raise UserError(_(
-                "Terlalu banyak lot (%(count)s). Maksimal %(max)s lot sekali generate; "
-                "perbesar Quantity per Lot.", count=lot_count, max=MAX_GENERATED_LOTS))
+                "Too many lots (%(count)s). At most %(max)s lots can be generated at once; "
+                "increase Quantity per Lot.", count=lot_count, max=MAX_GENERATED_LOTS))
 
         quantities = []
         remaining = qty_received

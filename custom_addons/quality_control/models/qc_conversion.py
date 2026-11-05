@@ -4,16 +4,16 @@ from odoo.tools.misc import clean_context
 
 
 class QcConversion(models.Model):
-    """Stock Conversion: mengubah stok produk asal (Grade A) menjadi produk hasil (B Grade)."""
+    """Stock Conversion: turns the source product (Grade A) into the result product (B Grade)."""
 
     _name = "qc.conversion"
     _description = "Stock Conversion"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "id desc"
 
-    name = fields.Char(string="Name", required=True, copy=False, default=lambda self: _("Downgrade"), tracking=True)
-    date = fields.Datetime(string="Date", default=fields.Datetime.now, required=True)
-    company_id = fields.Many2one("res.company", string="Company", required=True, default=lambda self: self.env.company)
+    name = fields.Char(required=True, copy=False, default=lambda self: _("Downgrade"), tracking=True)
+    date = fields.Datetime(default=fields.Datetime.now, required=True)
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     origin = fields.Char(string="Source Document")
     alert_id = fields.Many2one("qc.alert", string="Quality Alert", index=True, copy=False)
     state = fields.Selection(
@@ -37,13 +37,13 @@ class QcConversion(models.Model):
             conversion.produce_total = sum(conversion.produce_line_ids.mapped("qty"))
 
     def action_generate_lot(self):
-        """Buat lot untuk baris hasil yang bertracking tapi belum punya lot, memakai nomor lot barang asal."""
+        """Create the missing lot of tracked result lines, named after the source lot."""
         self.ensure_one()
         self = self.with_context(clean_context(self.env.context))
         source_lot = self.consume_line_ids.lot_id[:1]
         for line in self.produce_line_ids.filtered(lambda l: l.tracking != "none" and not l.lot_id):
             if not source_lot:
-                raise UserError(_("Isi Lot pada To be Consumed Item terlebih dahulu."))
+                raise UserError(_("Enter the lot on the To be Consumed item first."))
             line.lot_id = self.env["stock.lot"].search([
                 ("name", "=", source_lot.name),
                 ("product_id", "=", line.product_id.id),
@@ -57,13 +57,12 @@ class QcConversion(models.Model):
     def _check_ready(self):
         self.ensure_one()
         if not self.consume_line_ids or not self.produce_line_ids:
-            raise UserError(_("Isi To be Consumed Item dan To be Produced Item terlebih dahulu."))
+            raise UserError(_("Fill in both the To be Consumed and To be Produced items first."))
         for line in self.consume_line_ids | self.produce_line_ids:
             if line.qty <= 0:
-                raise UserError(_("Qty harus lebih besar dari 0: %s", line.product_id.display_name))
+                raise UserError(_("Quantity must be greater than 0: %s", line.product_id.display_name))
             if line.tracking != "none" and not line.lot_id:
-                raise UserError(_("Lot wajib diisi untuk: %s", line.product_id.display_name))
-        # Totals may differ (live allows consumed != produced), so there is no equality check here.
+                raise UserError(_("A lot is required for: %s", line.product_id.display_name))
 
     def action_validate(self):
         self = self.with_context(clean_context(self.env.context))
@@ -88,7 +87,7 @@ class QcConversion(models.Model):
 
     def action_cancel(self):
         if self.filtered(lambda c: c.state == "done"):
-            raise UserError(_("Konversi yang sudah divalidasi tidak dapat dibatalkan."))
+            raise UserError(_("A validated conversion cannot be cancelled."))
         self.write({"state": "cancel"})
 
     def action_draft(self):
@@ -96,7 +95,7 @@ class QcConversion(models.Model):
 
     def unlink(self):
         if self.filtered(lambda c: c.state == "done"):
-            raise UserError(_("Konversi yang sudah divalidasi tidak dapat dihapus."))
+            raise UserError(_("A validated conversion cannot be deleted."))
         return super().unlink()
 
 
@@ -108,16 +107,15 @@ class QcConversionLine(models.Model):
     line_type = fields.Selection(
         [("consume", "To be Consumed"), ("produce", "To be Produced")], required=True, default="consume")
     company_id = fields.Many2one(related="conversion_id.company_id", store=True)
-    product_id = fields.Many2one("product.product", string="Product", required=True, domain=[("type", "=", "product")])
-    tracking = fields.Selection(related="product_id.tracking", string="Tracking")
+    product_id = fields.Many2one("product.product", required=True, domain=[("type", "=", "product")])
+    tracking = fields.Selection(related="product_id.tracking")
     qty = fields.Float(string="Qty.", digits=(16, 2), required=True)
     uom_id = fields.Many2one("uom.uom", string="Unit", related="product_id.uom_id")
-    location_id = fields.Many2one(
-        "stock.location", string="Location", required=True, domain=[("usage", "=", "internal")])
-    lot_id = fields.Many2one("stock.lot", string="Lot", domain="[('product_id', '=', product_id)]")
+    location_id = fields.Many2one("stock.location", required=True, domain=[("usage", "=", "internal")])
+    lot_id = fields.Many2one("stock.lot", domain="[('product_id', '=', product_id)]")
 
     def _create_move(self):
-        """Barang asal keluar ke lokasi inventory adjustment, barang hasil masuk dari lokasi yang sama."""
+        """Source goods leave to the inventory adjustment location; result goods come in from it."""
         self.ensure_one()
         inventory_loc = self.product_id.with_company(self.company_id).property_stock_inventory
         consume = self.line_type == "consume"
