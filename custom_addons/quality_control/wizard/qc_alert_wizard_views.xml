@@ -4,21 +4,31 @@
         <field name="name">qc.alert.wizard.form</field>
         <field name="model">qc.alert.wizard</field>
         <field name="arch" type="xml">
-            <form string="Quality Alerts">
+            <form string="Create Quality Alerts">
                 <group>
-                    <field name="picking_id"/>
-                    <field name="title" placeholder="mis. SCRAP, DOWNGRADE..."/>
-                    <field name="team_id"/>
+                    <group>
+                        <field name="team_id" options="{'no_create': True}"/>
+                        <field name="user_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="picking_id" invisible="not picking_id"/>
+                    </group>
                 </group>
-                <field name="check_ids" options="{'no_create': True}">
-                    <tree>
-                        <field name="name"/>
+                <div class="alert alert-info" role="alert" invisible="not skipped_note">
+                    <field name="skipped_note" nolabel="1"/>
+                </div>
+                <field name="line_ids">
+                    <tree editable="bottom" create="0">
+                        <field name="title" placeholder="e.g. SCRAP, DOWNGRADE" width="180px"/>
+                        <field name="team_id" options="{'no_create': True}" width="120px"/>
+                        <field name="user_id" options="{'no_create': True}" width="140px"/>
+                        <field name="check_id" force_save="1"/>
                         <field name="product_id"/>
                         <field name="lot_name"/>
                         <field name="fail_qty"/>
-                        <field name="qty_to_downgrade"/>
-                        <field name="qty_to_scrap"/>
-                        <field name="team_id"/>
+                        <field name="pass_qty"/>
+                        <field name="scrap_proposed_qty"/>
+                        <field name="downgrade_proposed_qty"/>
                     </tree>
                 </field>
                 <footer>
@@ -27,5 +37,16 @@
                 </footer>
             </form>
         </field>
+    </record>
+
+    <record id="qc_alert_wizard_action" model="ir.actions.act_window">
+        <field name="name">Create Quality Alerts</field>
+        <field name="res_model">qc.alert.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'dialog_size': 'extra-large'}</field>
+        <field name="binding_model_id" ref="model_qc_check"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('quality_control.group_qc_user'))]"/>
     </record>
 </odoo>

@@ -4,7 +4,7 @@ from odoo import fields, models
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-    qc_conversion_id = fields.Many2one("qc.conversion", string="Stock Conversion", index=True, copy=False)
+    qc_conversion_id = fields.Many2one("qc.conversion", string="Simplified MO", index=True, copy=False)
 
     qty_a = fields.Float(digits=(16, 2))
     qty_a_star = fields.Float(string="Qty A*", digits=(16, 2))

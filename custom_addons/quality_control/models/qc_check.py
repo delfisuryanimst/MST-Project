@@ -211,13 +211,14 @@ class QcCheck(models.Model):
             raise UserError(_("A Quality Alert can only be created from a failed Quality Check."))
         if self.alert_ids:
             return self.action_view_alerts()
-        # Open an unsaved, prefilled form so the user must type the Title before saving.
+        # Small dialog (Team, Priority, Responsible) prefilled from the check; Save creates the alert.
         return {
             "type": "ir.actions.act_window",
             "name": _("Quality Alert"),
             "res_model": "qc.alert",
             "view_mode": "form",
-            "views": [(False, "form")],
+            "views": [(self.env.ref("quality_control.qc_alert_view_form_quick").id, "form")],
+            "target": "new",
             "context": {"default_%s" % key: value for key, value in self._prepare_alert_vals().items()},
         }
 
@@ -242,6 +243,15 @@ class QcCheckDetail(models.Model):
     no_cacat = fields.Float(string="No. Cacat")
     nilai_poin = fields.Float(help="4 Point System: 1 to 4 points per defect")
     remarks = fields.Char()
+
+    @api.onchange("nilai_poin")
+    def _onchange_nilai_poin(self):
+        if not 0 <= self.nilai_poin <= 4:
+            self.nilai_poin = 0
+            return {"warning": {
+                "title": _("Invalid points"),
+                "message": _("Points per defect must be between 0 and 4 (4 Point System)."),
+            }}
 
     @api.constrains("nilai_poin")
     def _check_nilai_poin(self):

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_qc_roll_root" name="QC Roll (Tahap 2)" sequence="46"
+              web_icon="quality_control,static/description/icon.png"
+              groups="mst17_qc_roll.group_qc_inspector"/>
+
+    <menuitem id="menu_qc_roll_inspection" name="Roll Inspection" parent="menu_qc_roll_root"
+              action="action_mst_qc_inspection" sequence="10"/>
+    <menuitem id="menu_qc_roll_load" name="Load Rolls" parent="menu_qc_roll_root"
+              action="action_mst_qc_load_rolls" sequence="20"/>
+    <menuitem id="menu_qc_roll_alert" name="QC Roll Alerts" parent="menu_qc_roll_root"
+              action="action_mst_qc_alert" sequence="30"/>
+    <menuitem id="menu_qc_roll_history" name="Roll History" parent="menu_qc_roll_root"
+              action="action_mst_roll_history" sequence="40"/>
+</odoo>

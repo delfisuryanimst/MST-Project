@@ -15,6 +15,10 @@
                 <field name="write_date" string="Last Updated on"/>
                 <field name="priority" widget="priority" optional="hide"/>
                 <field name="fail_qty" optional="hide"/>
+                <field name="scrap_proposed_qty" optional="hide" sum="Total"/>
+                <field name="scrap_executed_qty" optional="hide" sum="Total"/>
+                <field name="downgrade_proposed_qty" optional="hide" sum="Total"/>
+                <field name="downgrade_executed_qty" optional="hide" sum="Total"/>
                 <field name="team_id" optional="show"/>
                 <field name="user_id" optional="show"/>
                 <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
@@ -47,6 +51,33 @@
                     </t>
                 </templates>
             </kanban>
+        </field>
+    </record>
+
+    <record id="qc_alert_view_form_quick" model="ir.ui.view">
+        <field name="name">qc.alert.form.quick</field>
+        <field name="model">qc.alert</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <form string="Quality Alert">
+                <group>
+                    <group>
+                        <field name="team_id" options="{'no_create': True}"/>
+                        <field name="user_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="priority" widget="priority"/>
+                    </group>
+                </group>
+                <field name="check_id" invisible="1"/>
+                <field name="picking_id" invisible="1"/>
+                <field name="partner_id" invisible="1"/>
+                <field name="product_id" invisible="1"/>
+                <field name="lot_id" invisible="1"/>
+                <field name="downgrade_proposed_qty" invisible="1"/>
+                <field name="scrap_proposed_qty" invisible="1"/>
+                <field name="description" invisible="1"/>
+            </form>
         </field>
     </record>
 

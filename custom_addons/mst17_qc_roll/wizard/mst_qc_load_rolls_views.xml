@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mst_qc_load_rolls_form" model="ir.ui.view">
+        <field name="name">mst.qc.load.rolls.form</field>
+        <field name="model">mst.qc.load.rolls</field>
+        <field name="arch" type="xml">
+            <form string="Load Rolls">
+                <p class="text-muted">
+                    Pick the done QCP transfers. One inspection line is made for each roll that is still in
+                    the QC location. Rolls loaded before are skipped.
+                </p>
+                <group>
+                    <field name="picking_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_load" type="object" string="Load Rolls" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mst_qc_load_rolls" model="ir.actions.act_window">
+        <field name="name">Load Rolls</field>
+        <field name="res_model">mst.qc.load.rolls</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

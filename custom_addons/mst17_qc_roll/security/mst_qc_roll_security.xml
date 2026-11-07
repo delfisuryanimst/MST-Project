@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_qc_roll" model="ir.module.category">
+        <field name="name">QC Roll (Tahap 2)</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <!-- Fills the roll results. -->
+    <record id="group_qc_inspector" model="res.groups">
+        <field name="name">QC Inspector</field>
+        <field name="category_id" ref="module_category_qc_roll"/>
+    </record>
+
+    <!-- Also validates the results. The admin user gets it so the flow can be tried locally. -->
+    <record id="group_qc_koordinator" model="res.groups">
+        <field name="name">QC Koordinator</field>
+        <field name="category_id" ref="module_category_qc_roll"/>
+        <field name="implied_ids" eval="[(4, ref('group_qc_inspector'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mst_roll_history_tree" model="ir.ui.view">
+        <field name="name">mst.roll.history.tree</field>
+        <field name="model">mst.roll.history</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="event" widget="badge"/>
+                <field name="old_value"/>
+                <field name="new_value"/>
+                <field name="document_name" string="Document"/>
+                <field name="res_model" column_invisible="1"/>
+                <button name="action_open_document" type="object" icon="fa-external-link"
+                        title="Open document" invisible="not res_model"/>
+                <field name="user_id"/>
+                <field name="note" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mst_roll_history_search" model="ir.ui.view">
+        <field name="name">mst.roll.history.search</field>
+        <field name="model">mst.roll.history</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_lot" string="Roll" context="{'group_by': 'lot_id'}"/>
+                    <filter name="group_event" string="Event" context="{'group_by': 'event'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mst_roll_history" model="ir.actions.act_window">
+        <field name="name">Roll History</field>
+        <field name="res_model">mst.roll.history</field>
+        <field name="view_mode">tree</field>
+    </record>
+</odoo>

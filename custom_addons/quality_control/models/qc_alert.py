@@ -48,7 +48,7 @@ class QcAlert(models.Model):
     scrap_ids = fields.One2many("stock.scrap", "qc_alert_id", string="Scraps")
     scrap_executed_qty = fields.Float(string="Scrap (Executed)", compute="_compute_scrap")
     scrap_count = fields.Integer(compute="_compute_scrap")
-    conversion_ids = fields.One2many("qc.conversion", "alert_id", string="Stock Conversions")
+    conversion_ids = fields.One2many("qc.conversion", "alert_id", string="Simplified MOs")
     downgrade_executed_qty = fields.Float(string="Downgrade (Executed)", compute="_compute_downgrade")
     conversion_count = fields.Integer(compute="_compute_downgrade")
 
@@ -83,14 +83,12 @@ class QcAlert(models.Model):
 
     def action_create_scrap(self):
         self.ensure_one()
+        if self.scrap_ids:
+            return self.action_view_scraps()
         if not self.product_id:
             raise UserError(_("Select a product first."))
         if not self.scrap_proposed_qty:
             raise UserError(_("Enter 'Scrap (Proposed)' first."))
-        remaining = self.scrap_proposed_qty - self.scrap_executed_qty
-        if remaining <= 0:
-            raise UserError(_(
-                "The scrapped quantity has already reached 'Scrap (Proposed)'. Nothing is left to scrap."))
         return {
             "type": "ir.actions.act_window",
             "name": _("Scrap"),
@@ -98,25 +96,50 @@ class QcAlert(models.Model):
             "view_mode": "form",
             "views": [(self.env.ref("stock.stock_scrap_form_view2").id, "form")],
             "target": "new",
-            "context": self._prepare_scrap_context(remaining),
+            "context": self._prepare_scrap_context(self._scrap_remaining()),
         }
 
-    def _prepare_scrap_context(self, scrap_qty):
+    def _scrap_remaining(self):
         self.ensure_one()
-        context = {
-            "default_product_id": self.product_id.id,
-            "default_scrap_qty": scrap_qty,
-            "default_qc_alert_id": self.id,
-            "default_origin": self.name,
+        return self.scrap_proposed_qty - self.scrap_executed_qty
+
+    def _prepare_scrap_vals(self, scrap_qty):
+        self.ensure_one()
+        vals = {
+            "product_id": self.product_id.id,
+            "scrap_qty": scrap_qty,
+            "qc_alert_id": self.id,
+            "origin": self.name,
+            "lot_id": self.lot_id.id,
+            "picking_id": self.picking_id.id,
+            "location_id": self._get_lot_location().id,
         }
-        if self.lot_id:
-            context["default_lot_id"] = self.lot_id.id
-        if self.picking_id:
-            context["default_picking_id"] = self.picking_id.id
-        location = self._get_lot_location()
-        if location:
-            context["default_location_id"] = location.id
-        return context
+        return {key: value for key, value in vals.items() if value}
+
+    def _prepare_scrap_context(self, scrap_qty):
+        return {"default_%s" % key: value for key, value in self._prepare_scrap_vals(scrap_qty).items()}
+
+    def _create_draft_scrap(self, qty):
+        """Draft Scrap of qty of this alert's lot. Stock moves only when the user validates it."""
+        self.ensure_one()
+        return self.env["stock.scrap"].create(self._prepare_scrap_vals(qty))
+
+    @api.model
+    def _bulk_result_action(self, title, message, skipped):
+        """Notification shown after a bulk action; skipped is a list of (alert name, reason)."""
+        if skipped:
+            message += _(" Skipped: %s", "; ".join("%s (%s)" % item for item in skipped))
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": title,
+                "message": message,
+                "type": "warning" if skipped else "success",
+                "sticky": bool(skipped),
+                "next": {"type": "ir.actions.client", "tag": "soft_reload"},
+            },
+        }
 
     def action_view_check(self):
         self.ensure_one()
@@ -138,27 +161,76 @@ class QcAlert(models.Model):
         ], limit=1) if self.lot_id else self.env["stock.quant"]
         return quant.location_id or self.picking_id.location_dest_id
 
-    def action_create_downgrade(self):
-        self.ensure_one()
-        if not self.product_id:
-            raise UserError(_("Select a product first."))
+    def _downgrade_remaining(self):
         # Proposed is only a suggestion (executed may exceed it), so never block; the user types the rest.
-        remaining = max(self.downgrade_proposed_qty - self.downgrade_executed_qty, 0.0)
-        consume_vals = {
+        self.ensure_one()
+        return max(self.downgrade_proposed_qty - self.downgrade_executed_qty, 0.0)
+
+    def _prepare_consume_vals(self, qty):
+        self.ensure_one()
+        return {
             "line_type": "consume",
             "product_id": self.product_id.id,
-            "qty": remaining,
+            "qty": qty,
             "location_id": self._get_lot_location().id,
             "lot_id": self.lot_id.id,
         }
+
+    def _create_draft_conversion(self, qty, result_product):
+        """Draft Simplified MO: consume qty of this alert's lot and make the same qty of result_product.
+
+        Stock moves only when the user validates it. Before that, the user can edit the draft, e.g. to
+        split the result over several products.
+        """
+        self.ensure_one()
+        consume_vals = self._prepare_consume_vals(qty)
+        location = self.env["stock.location"].browse(consume_vals["location_id"])
+        quants = self.env["stock.quant"].search([
+            ("product_id", "=", self.product_id.id),
+            ("lot_id", "=", self.lot_id.id),
+            ("location_id", "child_of", location.id),
+        ])
+        if sum(quants.mapped("quantity")) < consume_vals["qty"]:
+            raise UserError(_("not enough stock in %s", location.display_name))
+        conversion = self.env["qc.conversion"].create({
+            "alert_id": self.id,
+            "origin": self.name,
+            "company_id": (self.company_id or self.env.company).id,
+            "consume_line_ids": [fields.Command.create(consume_vals)],
+            "produce_line_ids": [fields.Command.create({
+                "line_type": "produce",
+                "product_id": result_product.id,
+                "qty": qty,
+                "location_id": location.id,
+            })],
+        })
+        conversion.action_generate_lot()
+        return conversion
+
+    def _active_conversion(self):
+        """The alert's Simplified MO (Cancelled ones do not count)."""
+        self.ensure_one()
+        return self.conversion_ids.filtered(lambda c: c.state != "cancel").sorted("id")[:1]
+
+    def action_create_downgrade(self):
+        self.ensure_one()
+        conversion = self._active_conversion()
+        if conversion:
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "qc.conversion",
+                "view_mode": "form",
+                "res_id": conversion.id,
+            }
+        if not self.product_id:
+            raise UserError(_("Select a product first."))
+        consume_vals = self._prepare_consume_vals(self._downgrade_remaining())
         return {
             "type": "ir.actions.act_window",
-            "name": _("Downgrade"),
             "res_model": "qc.conversion",
             "view_mode": "form",
             "target": "current",
             "context": {
-                "default_name": _("Downgrade"),
                 "default_alert_id": self.id,
                 "default_origin": self.name,
                 "default_company_id": (self.company_id or self.env.company).id,
@@ -185,6 +257,8 @@ class QcAlert(models.Model):
         action = self.env["ir.actions.act_window"]._for_xml_id("stock.action_stock_scrap")
         action["domain"] = [("qc_alert_id", "in", self.ids)]
         action["context"] = {"create": False}
+        if len(self.scrap_ids) == 1:
+            action.update({"views": [(False, "form")], "res_id": self.scrap_ids.id})
         return action
 
     @api.model
@@ -209,3 +283,11 @@ class StockScrap(models.Model):
     _inherit = "stock.scrap"
 
     qc_alert_id = fields.Many2one("qc.alert", string="Quality Alert", index=True, copy=False)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            alert = self.env["qc.alert"].browse(vals.get("qc_alert_id"))
+            if alert.scrap_ids:
+                raise UserError(_("%s already has a Scrap document.", alert.name))
+        return super().create(vals_list)

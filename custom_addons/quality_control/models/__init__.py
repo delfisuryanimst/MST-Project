@@ -9,3 +9,4 @@ from . import stock_picking
 from . import stock_move
 from . import stock_move_line
 from . import qc_dashboard
+from . import res_users

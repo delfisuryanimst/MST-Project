@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mst_qc_inspection_inspector,mst.qc.inspection inspector,model_mst_qc_inspection,group_qc_inspector,1,1,1,1
+access_mst_qc_piece_inspector,mst.qc.piece inspector,model_mst_qc_piece,group_qc_inspector,1,1,1,1
+access_mst_qc_alert_inspector,mst.qc.alert inspector,model_mst_qc_alert,group_qc_inspector,1,0,0,0
+access_mst_roll_history_inspector,mst.roll.history inspector,model_mst_roll_history,group_qc_inspector,1,0,0,0
+access_mst_roll_history_stock_user,mst.roll.history stock user,model_mst_roll_history,stock.group_stock_user,1,0,0,0
+access_mst_qc_load_rolls_inspector,mst.qc.load.rolls inspector,model_mst_qc_load_rolls,group_qc_inspector,1,1,1,1

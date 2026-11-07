@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mst_qc_inspection_tree" model="ir.ui.view">
+        <field name="name">mst.qc.inspection.tree</field>
+        <field name="model">mst.qc.inspection</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="0" multi_edit="1"
+                  decoration-muted="result_state == 'validated'"
+                  decoration-warning="result_state == 'draft' and result_type != 'pass'">
+                <header>
+                    <button name="action_validate_result" type="object" string="Validate QC Result"
+                            class="btn-primary" groups="mst17_qc_roll.group_qc_koordinator"/>
+                    <button name="action_validate_qcp" type="object" string="Validate whole QCP"
+                            groups="mst17_qc_roll.group_qc_koordinator"/>
+                    <button name="action_refresh_from_check" type="object" string="Refresh from QC Check"/>
+                </header>
+                <field name="result_state" column_invisible="1"/>
+                <field name="picking_id" optional="show"/>
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="lot_warna" optional="show"/>
+                <field name="qty_roll" sum="Total"/>
+                <field name="uom_id" optional="hide"/>
+                <field name="yard_counter_qty" optional="show"/>
+                <field name="difference_qty" optional="hide"/>
+                <field name="akumulasi_poin" optional="show"/>
+                <field name="nilai_grading" optional="show"/>
+                <field name="qty_to_test" optional="hide"/>
+                <field name="pass_qty" optional="hide"/>
+                <field name="fail_qty" optional="hide"/>
+                <field name="qty_to_downgrade" optional="hide"/>
+                <field name="qty_to_scrap" optional="hide"/>
+                <field name="qty_to_sample" optional="hide"/>
+                <field name="check_result" optional="hide"/>
+                <field name="lot_warna_result" readonly="result_state != 'draft'"/>
+                <field name="qty_result" sum="Total" readonly="result_state != 'draft'"/>
+                <field name="qty_down" sum="Total" readonly="result_state != 'draft'"/>
+                <field name="product_down_id" options="{'no_create': True}"
+                       readonly="result_state != 'draft'" required="qty_down &gt; 0 and result_state == 'draft'"/>
+                <field name="qty_scrap" sum="Total" readonly="result_state != 'draft'"/>
+                <field name="qty_diff" sum="Total"/>
+                <field name="reason" optional="show" readonly="result_state != 'draft'"/>
+                <field name="result_type" widget="badge"
+                       decoration-success="result_type == 'pass'"
+                       decoration-info="result_type == 'data'"
+                       decoration-warning="result_type in ('qty', 'downgrade', 'mixed')"
+                       decoration-danger="result_type == 'scrap'"/>
+                <field name="result_state" widget="badge"
+                       decoration-info="result_state == 'draft'" decoration-success="result_state == 'validated'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mst_qc_inspection_form" model="ir.ui.view">
+        <field name="name">mst.qc.inspection.form</field>
+        <field name="model">mst.qc.inspection</field>
+        <field name="arch" type="xml">
+            <form string="Roll Inspection" create="0">
+                <header>
+                    <button name="action_validate_result" type="object" string="Validate QC Result"
+                            class="btn-primary" invisible="result_state != 'draft'"
+                            groups="mst17_qc_roll.group_qc_koordinator"/>
+                    <button name="action_validate_qcp" type="object" string="Validate whole QCP"
+                            invisible="result_state != 'draft'" groups="mst17_qc_roll.group_qc_koordinator"/>
+                    <button name="action_refresh_from_check" type="object" string="Refresh from QC Check"
+                            invisible="result_state != 'draft' or not check_id"/>
+                    <field name="result_type_done" invisible="1"/>
+                    <button name="action_inspect_pieces" type="object" string="Inspect Pieces"
+                            invisible="result_state != 'validated' or result_type_done != 'split'"/>
+                    <field name="result_state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="lot_id"/></h1>
+                    </div>
+                    <group>
+                        <group string="Roll">
+                            <field name="picking_id"/>
+                            <field name="product_id"/>
+                            <field name="location_id"/>
+                            <field name="lot_warna"/>
+                            <field name="qty_roll"/>
+                            <field name="qty_before" invisible="result_state != 'validated'"/>
+                            <field name="parent_id" invisible="not parent_id"/>
+                        </group>
+                        <group string="QC Result">
+                            <field name="lot_warna_result" readonly="result_state != 'draft'"/>
+                            <field name="qty_result" readonly="result_state != 'draft'"/>
+                            <field name="qty_down" readonly="result_state != 'draft'"/>
+                            <field name="product_down_id" options="{'no_create': True}"
+                                   readonly="result_state != 'draft'"
+                                   required="qty_down &gt; 0 and result_state == 'draft'"/>
+                            <field name="qty_scrap" readonly="result_state != 'draft'"/>
+                            <field name="qty_diff"/>
+                            <field name="result_type"/>
+                        </group>
+                    </group>
+                    <field name="reason" placeholder="Reason (needed above the qty tolerance)"
+                           readonly="result_state != 'draft'"/>
+                    <group string="Quality Check (from the check, read only)" invisible="not check_id">
+                        <group>
+                            <field name="check_id"/>
+                            <field name="check_point_id"/>
+                            <field name="check_test_type"/>
+                            <field name="qty_to_test"/>
+                            <field name="yard_asal"/>
+                            <field name="yard_counter_qty" string="Yard Counter Qty"/>
+                            <field name="difference_qty" string="Difference Qty"/>
+                            <field name="pass_qty"/>
+                            <field name="fail_qty"/>
+                            <field name="qty_to_downgrade"/>
+                            <field name="qty_to_scrap"/>
+                            <field name="qty_to_sample"/>
+                            <field name="check_result"/>
+                            <field name="check_state"/>
+                        </group>
+                        <group>
+                            <field name="check_team_id"/>
+                            <field name="check_user_id"/>
+                            <field name="check_date"/>
+                            <field name="check_partner_id"/>
+                            <field name="lebar_inch"/>
+                            <field name="akumulasi_poin" string="Akumulasi Poin"/>
+                            <field name="nilai_grading" string="Nilai Grading"/>
+                            <field name="nilai_grading_after"/>
+                            <field name="check_description"/>
+                            <button name="action_open_check" type="object" string="Open Quality Check"
+                                    class="btn-link"/>
+                        </group>
+                    </group>
+                    <field name="check_detail_ids" invisible="not check_id" readonly="1">
+                        <tree>
+                            <field name="posisi_cacat"/>
+                            <field name="yard_ke"/>
+                            <field name="no_cacat"/>
+                            <field name="nilai_poin" sum="Total Poin"/>
+                            <field name="remarks"/>
+                        </tree>
+                    </field>
+                    <div class="text-muted" invisible="not check_id or result_state != 'draft'">
+                        Qty Scrap (BS) and Qty Down are filled from the Quality Check. You can change them here.
+                    </div>
+                    <separator string="Split Roll"/>
+                    <div class="text-muted mb-2" invisible="result_state != 'draft'">
+                        To cut the roll, add at least 2 pieces. Pieces + Qty Scrap must equal the roll qty.
+                        The longest piece keeps the roll ID; the others get a new ID Roll. A split cannot be
+                        combined with a downgrade: split first, then use Inspect Pieces.
+                    </div>
+                    <field name="piece_ids" readonly="result_state != 'draft'">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="qty" sum="Total"/>
+                            <field name="lot_warna" placeholder="Same as the roll"/>
+                            <field name="keeps_id"/>
+                            <field name="new_lot_id"/>
+                        </tree>
+                    </field>
+                    <field name="child_ids" invisible="not child_ids" readonly="1">
+                        <tree>
+                            <field name="lot_id"/>
+                            <field name="qty_roll"/>
+                            <field name="result_type"/>
+                            <field name="result_state"/>
+                        </tree>
+                    </field>
+                    <group string="Documents" invisible="result_state != 'validated'">
+                        <field name="validated_by_id"/>
+                        <field name="validated_date"/>
+                        <field name="alert_id"/>
+                    </group>
+                    <separator string="Simplified MO (click a line to open it)"
+                               invisible="result_state != 'validated' or not conversion_ids"/>
+                    <field name="conversion_ids" readonly="1" invisible="result_state != 'validated'">
+                        <tree>
+                            <field name="reference"/>
+                            <field name="name"/>
+                            <field name="origin"/>
+                            <field name="consume_total"/>
+                            <field name="produce_total"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                    <separator string="Scrap (click a line to open it)"
+                               invisible="result_state != 'validated' or not scrap_ids"/>
+                    <field name="scrap_ids" readonly="1" invisible="result_state != 'validated'">
+                        <tree>
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="lot_id"/>
+                            <field name="scrap_qty"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_mst_qc_inspection_search" model="ir.ui.view">
+        <field name="name">mst.qc.inspection.search</field>
+        <field name="model">mst.qc.inspection</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="lot_id"/>
+                <field name="picking_id"/>
+                <field name="product_id"/>
+                <filter name="draft" string="To Validate" domain="[('result_state', '=', 'draft')]"/>
+                <filter name="validated" string="Validated" domain="[('result_state', '=', 'validated')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_picking" string="QCP" context="{'group_by': 'picking_id'}"/>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mst_qc_inspection" model="ir.actions.act_window">
+        <field name="name">Roll Inspection</field>
+        <field name="res_model">mst.qc.inspection</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_draft': 1, 'search_default_group_picking': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No roll to inspect</p>
+            <p>Use Load Rolls to bring in the rolls of a done QCP transfer.</p>
+        </field>
+    </record>
+</odoo>

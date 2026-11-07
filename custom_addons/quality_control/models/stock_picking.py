@@ -171,16 +171,26 @@ class StockPicking(models.Model):
             "res_model": "qc.alert.wizard",
             "view_mode": "form",
             "target": "new",
-            "context": {"default_picking_id": self.id},
+            "context": {"default_picking_id": self.id, "dialog_size": "extra-large"},
         }
 
-    def _action_open_alerts(self, alerts):
-        action = self._action_open_related("quality_control.qc_alert_action")
-        action["domain"] = [("id", "in", alerts.ids)]
-        if len(alerts) == 1:
-            action["views"] = [(False, "form")]
-            action["res_id"] = alerts.id
-        return action
+    def action_execute_alerts(self):
+        """Open Execute Alerts with the Quality Alerts of this transfer already listed."""
+        self.ensure_one()
+        if not self.qc_alert_ids:
+            raise UserError(_("This transfer has no Quality Alert yet. Create the Quality Alerts first."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Execute Alerts"),
+            "res_model": "qc.alert.execute.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "active_model": "qc.alert",
+                "active_ids": self.qc_alert_ids.ids,
+                "dialog_size": "extra-large",
+            },
+        }
 
     def action_request_qc(self):
         self.ensure_one()

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Execute Alerts makes draft Scraps and draft Simplified MOs. These two actions validate many drafts
+        at once: select rows in the list, then Action > Validate.
+    -->
+    <record id="action_server_qc_conversion_validate" model="ir.actions.server">
+        <field name="name">Validate</field>
+        <field name="model_id" ref="model_qc_conversion"/>
+        <field name="binding_model_id" ref="model_qc_conversion"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('quality_control.group_qc_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">records.action_validate()</field>
+    </record>
+
+    <record id="action_server_stock_scrap_validate" model="ir.actions.server">
+        <field name="name">Validate</field>
+        <field name="model_id" ref="stock.model_stock_scrap"/>
+        <field name="binding_model_id" ref="stock.model_stock_scrap"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('quality_control.group_qc_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+# A Scrap without enough stock stays draft; the others are validated.
+failed = []
+for scrap in records.filtered(lambda s: s.state == "draft"):
+    if isinstance(scrap.action_validate(), dict):
+        failed.append(scrap.origin or scrap.name)
+if failed:
+    action = {
+        "type": "ir.actions.client",
+        "tag": "display_notification",
+        "params": {
+            "title": "Validate",
+            "message": "Not enough stock, still draft: %s" % ", ".join(failed),
+            "type": "warning",
+            "sticky": True,
+        },
+    }
+        </field>
+    </record>
+</odoo>

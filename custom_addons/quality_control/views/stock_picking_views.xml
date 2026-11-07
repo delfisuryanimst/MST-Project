@@ -7,15 +7,15 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <field name="has_on_demand_qc" invisible="1"/>
-                <button name="action_view_qc_checks" type="object" string="Quality Checks"
-                        class="btn-primary" invisible="qc_todo_count == 0"
-                        groups="quality_control.group_qc_user"/>
                 <button name="action_request_qc" type="object" string="Request QC"
                         invisible="not has_on_demand_qc"
                         groups="quality_control.group_qc_user"/>
                 <field name="has_failed_qc" invisible="1"/>
                 <button name="open_quality_alert" type="object" string="Quality Alerts"
                         class="btn-primary" invisible="not has_failed_qc"
+                        groups="quality_control.group_qc_user"/>
+                <button name="action_execute_alerts" type="object" string="Execute Alerts"
+                        invisible="qc_alert_count == 0"
                         groups="quality_control.group_qc_user"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
@@ -39,6 +39,43 @@
                 <field name="qty_a_grey_c_a1" optional="show"/>
                 <field name="qty_bs" optional="show"/>
                 <field name="k3l" optional="show"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Quality Checks" name="qc_checks" invisible="qc_check_count == 0"
+                      groups="quality_control.group_qc_user">
+                    <field name="qc_check_ids" nolabel="1" readonly="1">
+                        <tree create="0" delete="0" decoration-danger="quality_state == 'fail'"
+                              decoration-success="quality_state == 'pass'">
+                            <field name="quality_state" column_invisible="1"/>
+                            <field name="control_date" string="Date"/>
+                            <field name="product_id"/>
+                            <field name="lot_name" string="Lot / SN"/>
+                            <field name="point_id" string="QC Point"/>
+                            <field name="test_type" string="Type"/>
+                            <field name="result" string="Status" widget="badge" invisible="quality_state == 'todo'"
+                                   decoration-success="result == 'pass'" decoration-danger="result == 'fail'"/>
+                            <field name="qty_to_test" string="Quantity to Test" sum="Total"/>
+                            <field name="fail_qty" sum="Total"/>
+                            <field name="user_id" string="QC User"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Quality Alerts" name="qc_alerts" invisible="qc_alert_count == 0"
+                      groups="quality_control.group_qc_user">
+                    <field name="qc_alert_ids" nolabel="1" readonly="1">
+                        <tree create="0" delete="0">
+                            <field name="name"/>
+                            <field name="title"/>
+                            <field name="product_id"/>
+                            <field name="lot_id" string="Lot / SN"/>
+                            <field name="scrap_proposed_qty" sum="Total"/>
+                            <field name="downgrade_proposed_qty" sum="Total"/>
+                            <field name="team_id"/>
+                            <field name="user_id"/>
+                            <field name="stage_id"/>
+                        </tree>
+                    </field>
+                </page>
             </xpath>
             <xpath expr="//sheet" position="before">
                 <field name="qc_status" invisible="1"/>

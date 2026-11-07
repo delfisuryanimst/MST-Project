@@ -1,16 +1,19 @@
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.misc import clean_context
 
 
 class QcConversion(models.Model):
-    """Stock Conversion: turns the source product (Grade A) into the result product (B Grade)."""
+    """Simplified MO: turns the source product (Grade A) into the result product (B Grade)."""
 
     _name = "qc.conversion"
-    _description = "Stock Conversion"
+    _description = "Simplified MO"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "id desc"
 
+    reference = fields.Char(default=lambda self: _("New"), copy=False, readonly=True, index=True)
     name = fields.Char(required=True, copy=False, default=lambda self: _("Downgrade"), tracking=True)
     date = fields.Datetime(default=fields.Datetime.now, required=True)
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
@@ -29,6 +32,22 @@ class QcConversion(models.Model):
     consume_total = fields.Float(compute="_compute_totals", digits=(16, 2))
     produce_total = fields.Float(compute="_compute_totals", digits=(16, 2))
     move_ids = fields.One2many("stock.move", "qc_conversion_id", string="Inventory Adjustments", readonly=True)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            alert = self.env["qc.alert"].browse(vals.get("alert_id"))
+            if alert and alert._active_conversion():
+                raise UserError(_(
+                    "%(alert)s already has a Simplified MO (%(smo)s).",
+                    alert=alert.name, smo=alert._active_conversion().reference))
+            if vals.get("reference", _("New")) == _("New"):
+                vals["reference"] = self.env["ir.sequence"].next_by_code("qc.conversion") or _("New")
+        conversions = super().create(vals_list)
+        for conversion in conversions.filtered("alert_id"):
+            conversion.message_post(body=Markup('%s: <a href="#" data-oe-model="qc.alert" data-oe-id="%s">%s</a>') % (
+                _("This downgrade has been created from"), conversion.alert_id.id, conversion.alert_id.name))
+        return conversions
 
     @api.depends("consume_line_ids.qty", "produce_line_ids.qty")
     def _compute_totals(self):
@@ -101,7 +120,7 @@ class QcConversion(models.Model):
 
 class QcConversionLine(models.Model):
     _name = "qc.conversion.line"
-    _description = "Stock Conversion Line"
+    _description = "Simplified MO Line"
 
     conversion_id = fields.Many2one("qc.conversion", required=True, ondelete="cascade", index=True)
     line_type = fields.Selection(
@@ -123,8 +142,8 @@ class QcConversionLine(models.Model):
         dest = inventory_loc if consume else self.location_id
         conversion = self.conversion_id
         return self.env["stock.move"].sudo().create({
-            "name": conversion.name,
-            "origin": conversion.origin or conversion.name,
+            "name": conversion.reference,
+            "origin": conversion.origin or conversion.reference,
             "company_id": self.company_id.id,
             "product_id": self.product_id.id,
             "product_uom": self.uom_id.id,

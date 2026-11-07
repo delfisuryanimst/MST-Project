@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- QA2 so these alerts are never mixed up with the old Quality Alerts (QA/...). -->
+    <record id="seq_mst_qc_alert" model="ir.sequence">
+        <field name="name">QC Roll Alert</field>
+        <field name="code">mst.qc.alert</field>
+        <field name="prefix">QA2/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- ID Roll for a new piece of a split roll, e.g. R26-000123 (TSD "ID Roll dan EPC v4"). -->
+    <record id="seq_mst_roll_id" model="ir.sequence">
+        <field name="name">ID Roll</field>
+        <field name="code">mst.roll.id</field>
+        <field name="prefix">R%(y)s-</field>
+        <field name="padding">6</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
