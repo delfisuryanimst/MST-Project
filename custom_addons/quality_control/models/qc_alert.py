@@ -176,13 +176,15 @@ class QcAlert(models.Model):
             "lot_id": self.lot_id.id,
         }
 
-    def _create_draft_conversion(self, qty, result_product):
+    def _create_draft_conversion(self, qty, result_product, results=None):
         """Draft Simplified MO: consume qty of this alert's lot and make the same qty of result_product.
 
-        Stock moves only when the user validates it. Before that, the user can edit the draft, e.g. to
-        split the result over several products.
+        results is an optional list of (product, qty) or (product, qty, lot) to make several products
+        instead of one. A result without a lot gets the source lot name (Generate Lot).
+        Stock moves only when the user validates it. Before that, the user can still edit the draft.
         """
         self.ensure_one()
+        results = [tuple(item) + (False,) * (3 - len(item)) for item in (results or [(result_product, qty)])]
         consume_vals = self._prepare_consume_vals(qty)
         location = self.env["stock.location"].browse(consume_vals["location_id"])
         quants = self.env["stock.quant"].search([
@@ -199,10 +201,11 @@ class QcAlert(models.Model):
             "consume_line_ids": [fields.Command.create(consume_vals)],
             "produce_line_ids": [fields.Command.create({
                 "line_type": "produce",
-                "product_id": result_product.id,
-                "qty": qty,
+                "product_id": product.id,
+                "qty": result_qty,
                 "location_id": location.id,
-            })],
+                "lot_id": lot.id if lot else False,
+            }) for product, result_qty, lot in results],
         })
         conversion.action_generate_lot()
         return conversion

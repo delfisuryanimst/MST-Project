@@ -27,4 +27,5 @@ access_qc_check_report_wizard_user,qc.check.report.wizard user,model_qc_check_re
 access_qc_alert_report_wizard_user,qc.alert.report.wizard user,model_qc_alert_report_wizard,group_qc_user,1,1,1,1
 access_qc_alert_execute_wizard_user,qc.alert.execute.wizard user,model_qc_alert_execute_wizard,group_qc_user,1,1,1,1
 access_qc_alert_execute_wizard_line_user,qc.alert.execute.wizard.line user,model_qc_alert_execute_wizard_line,group_qc_user,1,1,1,1
+access_qc_alert_execute_wizard_split_user,qc.alert.execute.wizard.split user,model_qc_alert_execute_wizard_split,group_qc_user,1,1,1,1
 access_qc_alert_wizard_line_user,qc.alert.wizard.line user,model_qc_alert_wizard_line,group_qc_user,1,1,1,1

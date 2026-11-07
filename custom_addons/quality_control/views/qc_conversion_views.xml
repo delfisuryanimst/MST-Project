@@ -49,6 +49,7 @@
                         <group>
                             <field name="company_id" readonly="state != 'draft'"/>
                             <field name="origin" readonly="state != 'draft'"/>
+                            <field name="qcp_id" invisible="not qcp_id"/>
                         </group>
                     </group>
                     <notebook>

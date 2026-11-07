@@ -26,15 +26,31 @@
                         <field name="downgrade_proposed_qty" optional="hide"/>
                         <field name="downgrade_qty" readonly="has_conversion"/>
                         <field name="result_product_id" options="{'no_create': True}"
-                               readonly="has_conversion or downgrade_qty &lt;= 0"
-                               required="downgrade_qty &gt; 0 and not has_conversion" width="220px"/>
+                               readonly="has_conversion or downgrade_qty &lt;= 0" width="220px"/>
                         <field name="note" width="220px"/>
+                    </tree>
+                </field>
+                <field name="alert_ids" invisible="1"/>
+                <separator string="Split Result (optional)"/>
+                <div class="text-muted mb-2">
+                    For an alert whose Downgrade Qty goes to several results: one row per result. A row can
+                    be another product, or the alert's own product to cut the roll into pieces. The rows of
+                    one alert must add up to its Downgrade Qty, and its Result Product above is then not used.
+                    Leave Lot empty for an automatic lot: for the alert's own product the biggest piece keeps
+                    the lot and the other pieces get lot-2, lot-3...
+                </div>
+                <field name="split_ids" nolabel="1">
+                    <tree editable="bottom">
+                        <field name="alert_id" options="{'no_create': True, 'no_open': True}"
+                               domain="[('id', 'in', parent.alert_ids)]"/>
+                        <field name="product_id" options="{'no_create': True}"/>
+                        <field name="qty" sum="Total"/>
+                        <field name="lot_name" placeholder="Automatic"/>
                     </tree>
                 </field>
                 <div class="text-muted">
                     Creates a draft Scrap and/or a draft Simplified MO per alert. Stock moves only when the
-                    drafts are validated. To make several products from one alert, edit its draft
-                    Simplified MO before validating.
+                    drafts are validated.
                 </div>
                 <footer>
                     <button name="action_create_drafts" string="Create Drafts" type="object" class="btn-primary"/>
