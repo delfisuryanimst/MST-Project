@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_line_journey_tree" model="ir.ui.view">
+        <field name="name">sale.order.line.journey.tree</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0" default_group_by="journey_stage"
+                  decoration-danger="journey_overdue" decoration-muted="journey_stage in ('done', 'cancel')">
+                <field name="currency_id" column_invisible="True"/>
+                <field name="order_id" decoration-bf="1"/>
+                <field name="order_partner_id"/>
+                <field name="salesman_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="journey_team_id" optional="hide"/>
+                <field name="product_id"/>
+                <field name="journey_categ_id" optional="hide"/>
+                <field name="product_uom_qty" sum="Total"/>
+                <field name="qty_delivered" optional="hide" sum="Total"/>
+                <field name="qty_invoiced" optional="hide" sum="Total"/>
+                <field name="product_uom" groups="uom.group_uom" optional="show"/>
+                <field name="journey_qty_remaining" sum="Total"/>
+                <field name="journey_stage" widget="badge"/>
+                <field name="journey_conclusion" widget="badge"
+                       decoration-success="journey_conclusion == 'ready'"
+                       decoration-warning="journey_conclusion == 'waiting_qc'"
+                       decoration-danger="journey_conclusion == 'short'"/>
+                <field name="journey_short_qty" optional="hide"/>
+                <field name="journey_qc_age" optional="hide"
+                       decoration-danger="journey_qc_warning"/>
+                <field name="journey_qc_warning" column_invisible="1"/>
+                <field name="journey_shared" optional="show"/>
+                <field name="journey_delivery_date" widget="date"/>
+                <field name="journey_overdue" column_invisible="1"/>
+                <field name="journey_invoice_state" widget="badge"
+                       decoration-success="journey_invoice_state == 'full'"
+                       decoration-info="journey_invoice_state == 'partial'"/>
+                <field name="journey_updated" optional="hide"/>
+                <button name="action_open_journey_order" type="object" icon="fa-external-link"
+                        title="Open Sales Order"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Cards for phones: the list is too wide for a small screen. -->
+    <record id="sale_order_line_journey_kanban" model="ir.ui.view">
+        <field name="name">sale.order.line.journey.kanban</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <kanban create="0" edit="0" delete="0" class="o_kanban_mobile" group_create="0" records_draggable="0">
+                <field name="order_id"/>
+                <field name="order_partner_id"/>
+                <field name="salesman_id"/>
+                <field name="product_id"/>
+                <field name="product_uom"/>
+                <field name="product_uom_qty"/>
+                <field name="journey_stage"/>
+                <field name="journey_conclusion"/>
+                <field name="journey_short_qty"/>
+                <field name="journey_qty_remaining"/>
+                <field name="journey_qc_age"/>
+                <field name="journey_qc_warning"/>
+                <field name="journey_shared"/>
+                <field name="journey_overdue"/>
+                <field name="journey_delivery_date"/>
+                <field name="journey_invoice_state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card position-relative">
+                            <!-- Tap anywhere on the card to open the sales order. -->
+                            <a type="object" name="action_open_journey_order" class="stretched-link"/>
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div class="fw-bold">
+                                    <field name="order_id"/>
+                                    <span class="text-muted fw-normal"> · <field name="order_partner_id"/></span>
+                                </div>
+                                <span t-if="record.journey_shared.raw_value" class="badge rounded-pill bg-info text-white">
+                                    Shared Production
+                                </span>
+                                <span t-elif="record.journey_conclusion.raw_value == 'ready'"
+                                      class="badge rounded-pill bg-success text-white">
+                                    <field name="journey_conclusion"/>
+                                </span>
+                                <span t-elif="record.journey_conclusion.raw_value == 'waiting_qc'"
+                                      class="badge rounded-pill bg-warning text-dark">
+                                    <field name="journey_conclusion"/>
+                                </span>
+                                <span t-elif="record.journey_conclusion.raw_value == 'short'"
+                                      class="badge rounded-pill bg-danger text-white">
+                                    <field name="journey_conclusion"/>
+                                </span>
+                            </div>
+
+                            <div class="mt-1"><field name="product_id"/></div>
+                            <div class="text-muted small">
+                                <field name="salesman_id"/>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mt-2 small">
+                                <span class="badge rounded-pill bg-light text-dark border">
+                                    <field name="journey_stage"/>
+                                </span>
+                                <span>
+                                    Remaining
+                                    <b><field name="journey_qty_remaining"/></b>
+                                    <field name="product_uom"/>
+                                    <t t-if="record.journey_short_qty.raw_value &gt; 0">
+                                        (missing <b><field name="journey_short_qty"/></b>)
+                                    </t>
+                                </span>
+                            </div>
+
+                            <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
+                                <span t-if="record.journey_delivery_date.raw_value"
+                                      t-attf-class="#{record.journey_overdue.raw_value ? 'text-danger fw-bold' : 'text-muted'}">
+                                    <i class="fa fa-truck me-1" title="Delivery Date" role="img"/>
+                                    <field name="journey_delivery_date" widget="date"/>
+                                    <t t-if="record.journey_overdue.raw_value"> · Late</t>
+                                </span>
+                                <span t-if="record.journey_qc_age.raw_value &gt; 0"
+                                      t-attf-class="#{record.journey_qc_warning.raw_value ? 'text-danger fw-bold' : 'text-muted'}">
+                                    <i class="fa fa-clock-o me-1" title="Days in QC" role="img"/>QC <field name="journey_qc_age"/> days
+                                </span>
+                                <span class="text-muted">
+                                    <i class="fa fa-file-text-o me-1" title="Invoice" role="img"/><field name="journey_invoice_state"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="sale_order_line_journey_search" model="ir.ui.view">
+        <field name="name">sale.order.line.journey.search</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="order_id"/>
+                <field name="order_partner_id"/>
+                <field name="product_id"/>
+                <field name="salesman_id"/>
+                <field name="journey_team_id"/>
+                <filter name="not_done" string="Not Done"
+                        domain="[('journey_stage', 'not in', ('done', 'cancel'))]"/>
+                <separator/>
+                <filter name="qc_warning" string="Waiting QC Too Long"
+                        domain="[('journey_qc_warning', '=', True)]"/>
+                <filter name="late" string="Late"
+                        domain="[('journey_overdue', '=', True)]"/>
+                <filter name="shared" string="Shared Production"
+                        domain="[('journey_shared', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_stage" string="Current Stage" context="{'group_by': 'journey_stage'}"/>
+                    <filter name="group_conclusion" string="Conclusion" context="{'group_by': 'journey_conclusion'}"/>
+                    <filter name="group_salesman" string="Salesperson" context="{'group_by': 'salesman_id'}"/>
+                    <filter name="group_team" string="Sales Team" context="{'group_by': 'journey_team_id'}"/>
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'order_partner_id'}"/>
+                    <filter name="group_categ" string="Product Category" context="{'group_by': 'journey_categ_id'}"/>
+                </group>
+                <searchpanel>
+                    <field name="journey_stage" select="multi" enable_counters="1"/>
+                    <field name="journey_conclusion" select="multi" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sale_order_line_journey" model="ir.actions.act_window">
+        <field name="name">Order Journey</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">tree,kanban</field>
+        <!-- mobile_view_mode defaults to kanban: phones open the cards, desktop opens the list. -->
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('sale_order_line_journey_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('sale_order_line_journey_kanban')})]"/>
+        <field name="search_view_id" ref="sale_order_line_journey_search"/>
+        <field name="domain">[('display_type', '=', False), ('is_downpayment', '=', False)]</field>
+        <field name="context">{'search_default_not_done': 1}</field>
+    </record>
+
+    <!-- Lets you update the status right away instead of waiting for the hourly cron. -->
+    <record id="action_server_journey_refresh" model="ir.actions.server">
+        <field name="name">Update Journey</field>
+        <field name="model_id" ref="sale.model_sale_order_line"/>
+        <field name="binding_model_id" ref="sale.model_sale_order_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_journey_refresh()</field>
+    </record>
+
+    <menuitem id="menu_sale_order_line_journey"
+              name="Order Journey"
+              parent="sale.sale_order_menu"
+              action="action_sale_order_line_journey"
+              sequence="25"/>
+</odoo>

@@ -1,0 +1,267 @@
+// Journey tab on the Sales Order form.
+// Desktop: steps in one row. Phone (iPhone, < 768px): steps as a vertical list.
+
+$journey-dot: 20px;
+$journey-line: 2px;
+
+// Soft pill colors from the mockup: (background, text).
+$journey-pills: (
+    "ok": (#E3F1DF, #1E5B1A),
+    "warn": (#FFF1CC, #7A4B00),
+    "bad": (#FBE4E4, #8A1C1C),
+    "info": (#E1EEFB, #0B4F8A),
+    "muted": (#EEF0F2, #4B5157),
+);
+
+.o_mst_journey {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+
+    .o_mst_journey_card {
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        padding: 14px 16px;
+        min-width: 0;
+    }
+
+    .o_mst_journey_head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .o_mst_journey_title {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        b {
+            font-size: 15px;
+        }
+    }
+
+    .o_mst_journey_pill {
+        display: inline-block;
+        flex: 0 1 auto;
+        max-width: 50%;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        @each $name, $colors in $journey-pills {
+            &.o_mst_journey_pill_#{$name} {
+                background: nth($colors, 1);
+                color: nth($colors, 2);
+            }
+        }
+    }
+
+    .o_mst_journey_sub {
+        display: block;
+        font-size: 12px;
+        color: $text-muted;
+    }
+
+    // ---------- Steps: horizontal (desktop) ----------
+    .o_mst_journey_steps {
+        display: flex;
+        list-style: none;
+        margin: 14px 0 6px;
+        padding: 0;
+    }
+
+    .o_mst_journey_step {
+        flex: 1 1 0;
+        min-width: 0;
+        position: relative;
+        text-align: center;
+        font-size: 12px;
+        color: $text-muted;
+
+        // Line from the previous step to this one.
+        &::before {
+            content: "";
+            position: absolute;
+            top: ($journey-dot - $journey-line) / 2;
+            left: -50%;
+            width: 100%;
+            height: $journey-line;
+            background: $border-color;
+        }
+        &:first-child::before {
+            display: none;
+        }
+    }
+
+    .o_mst_journey_dot {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: $journey-dot;
+        height: $journey-dot;
+        margin: 0 auto 4px;
+        border: 2px solid $border-color;
+        border-radius: 50%;
+        background: $o-view-background-color;
+        color: #fff;
+        font-size: 10px;
+    }
+
+    .o_mst_journey_step_text {
+        display: block;
+        overflow-wrap: anywhere;
+    }
+
+    .o_mst_journey_done {
+        &::before {
+            background: $primary;
+        }
+        .o_mst_journey_dot {
+            background: $primary;
+            border-color: $primary;
+        }
+    }
+
+    // Step not needed for this line (e.g. no production when sold from stock).
+    .o_mst_journey_skipped {
+        &::before {
+            background: $primary;
+        }
+        .o_mst_journey_dot {
+            background: $gray-400;
+            border-color: $gray-400;
+        }
+    }
+
+    .o_mst_journey_current {
+        color: $body-color;
+        font-weight: 500;
+        .o_mst_journey_sub {
+            color: $body-color;
+        }
+        &::before {
+            background: $primary;
+        }
+        .o_mst_journey_dot {
+            border-color: $primary;
+            box-shadow: 0 0 0 3px rgba($primary, 0.2);
+        }
+    }
+
+    // ---------- Number boxes ----------
+    .o_mst_journey_facts {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .o_mst_journey_fact {
+        background: #F7F8FA;
+        border-radius: 6px;
+        padding: 8px 10px;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        b {
+            display: block;
+            font-size: 15px;
+            color: $body-color;
+        }
+    }
+
+    .o_mst_journey_fact_warning {
+        background: rgba($danger, 0.1);
+        b {
+            color: $danger;
+        }
+    }
+
+    .o_mst_journey_note {
+        margin-top: 10px;
+        font-size: 13px;
+    }
+
+    // ---------- Tablet ----------
+    @include media-breakpoint-down(lg) {
+        .o_mst_journey_facts {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    // ---------- Phone (iPhone) ----------
+    @include media-breakpoint-down(md) {
+        .o_mst_journey_card {
+            padding: 12px;
+        }
+
+        .o_mst_journey_head {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .o_mst_journey_pill {
+            max-width: 100%;
+        }
+
+        // Steps become a vertical list: dot on the left, text on the right.
+        .o_mst_journey_steps {
+            flex-direction: column;
+            margin: 12px 0 4px;
+        }
+
+        .o_mst_journey_step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            text-align: left;
+            padding-bottom: 12px;
+
+            &::before {
+                display: none;
+            }
+            // Line from this step down to the next one.
+            &::after {
+                content: "";
+                position: absolute;
+                left: ($journey-dot - $journey-line) / 2;
+                top: $journey-dot;
+                bottom: 0;
+                width: $journey-line;
+                background: $border-color;
+            }
+            &:last-child {
+                padding-bottom: 0;
+                &::after {
+                    display: none;
+                }
+            }
+        }
+
+        .o_mst_journey_done::after,
+        .o_mst_journey_skipped::after {
+            background: $primary;
+        }
+
+        .o_mst_journey_dot {
+            flex: 0 0 $journey-dot;
+            margin: 0;
+        }
+
+        .o_mst_journey_step_title,
+        .o_mst_journey_step_text .o_mst_journey_sub {
+            display: inline;
+        }
+        .o_mst_journey_step_text .o_mst_journey_sub::before {
+            content: " · ";
+        }
+    }
+
+    @include media-breakpoint-down(sm) {
+        .o_mst_journey_facts {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+}

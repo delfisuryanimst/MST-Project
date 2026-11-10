@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate: values changed in Settings > Technical > System Parameters are kept on upgrade. -->
+    <data noupdate="1">
+        <record id="param_qc_location_name" model="ir.config_parameter">
+            <field name="key">mst17_sales_journey.qc_location_name</field>
+            <field name="value">QC0500</field>
+        </record>
+        <record id="param_qc_warning_days" model="ir.config_parameter">
+            <field name="key">mst17_sales_journey.qc_warning_days</field>
+            <field name="value">14</field>
+        </record>
+    </data>
+</odoo>

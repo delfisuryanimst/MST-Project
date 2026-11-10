@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- One card per product line. Rendered on the server into sale.order.journey_html. -->
+    <template id="journey_cards">
+        <div class="o_mst_journey">
+            <div t-if="not cards" class="text-muted">No product lines yet.</div>
+            <div t-foreach="cards" t-as="card" class="o_mst_journey_card">
+                <div class="o_mst_journey_head">
+                    <div class="o_mst_journey_title">
+                        <b t-esc="card['product']"/>
+                        <div class="o_mst_journey_sub" t-esc="card['subtitle']"/>
+                    </div>
+                    <span t-attf-class="o_mst_journey_pill o_mst_journey_pill_#{card['badge']['color']}"
+                          t-esc="card['badge']['text']"/>
+                </div>
+
+                <ol class="o_mst_journey_steps">
+                    <li t-foreach="card['steps']" t-as="step"
+                        t-attf-class="o_mst_journey_step o_mst_journey_#{step['status']}">
+                        <span class="o_mst_journey_dot">
+                            <i t-if="step['status'] == 'done'" class="fa fa-check"/>
+                            <i t-elif="step['status'] == 'skipped'" class="fa fa-minus"/>
+                        </span>
+                        <span class="o_mst_journey_step_text">
+                            <span class="o_mst_journey_step_title" t-esc="step['title']"/>
+                            <span class="o_mst_journey_sub" t-esc="step['info']"/>
+                        </span>
+                    </li>
+                </ol>
+
+                <div t-if="card['facts']" class="o_mst_journey_facts">
+                    <div t-foreach="card['facts']" t-as="fact"
+                         t-attf-class="o_mst_journey_fact #{'o_mst_journey_fact_warning' if fact.get('warning') else ''}">
+                        <span class="o_mst_journey_sub" t-esc="fact['label']"/>
+                        <b t-esc="fact['value']"/>
+                        <span t-if="fact.get('sub')" class="o_mst_journey_sub" t-esc="fact['sub']"/>
+                    </div>
+                </div>
+
+                <div t-foreach="card['notes']" t-as="note" class="o_mst_journey_note">
+                    <i t-attf-class="fa #{note['icon']} me-1 text-#{note['color']}"/>
+                    <span t-esc="note['text']"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <record id="view_order_form_journey" model="ir.ui.view">
+        <field name="name">sale.order.form.journey</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <page name="order_lines" position="after">
+                <page string="Journey" name="journey">
+                    <field name="journey_html" nolabel="1" readonly="1"/>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>
