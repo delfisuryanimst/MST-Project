@@ -10,7 +10,8 @@ class QcAlertWizard(models.TransientModel):
     MAX_ALERTS =100
 
     picking_id = fields.Many2one("stock.picking", string="Transfer", readonly=True)
-    title = fields.Char(help="Used for every line whose Title is empty, e.g. SCRAP or DOWNGRADE.")
+    title = fields.Char(help="Used for every line whose Title is empty. Leave it empty for an automatic title, "
+                             "like DOWNGRADE, SCRAP DAN RUBAH QTY.")
     team_id = fields.Many2one("qc.team", help="Used for every line whose Team is empty.")
     user_id = fields.Many2one(
         "res.users", string="Responsible", default=lambda self: self.env.user,
@@ -72,13 +73,14 @@ class QcAlertWizard(models.TransientModel):
         self._check_max_alerts(len(self.line_ids))
         if not self.line_ids:
             raise UserError(_("Select at least one product to create a Quality Alert for."))
-        if self.line_ids.filtered(lambda line: not (line.title or self.title)):
-            raise UserError(_("Enter a Title, either on top for all lines or on each line."))
         vals_list = []
         for line in self.line_ids:
             vals = line.check_id._prepare_alert_vals()
+            # A line without a Title (and no Title on top) gets one from its proposed actions.
+            auto_title = self.env["qc.alert"]._get_auto_title(
+                line.downgrade_proposed_qty, line.scrap_proposed_qty, vals.get("qty_adjust_proposed_qty", 0.0))
             vals.update({
-                "title": line.title or self.title,
+                "title": line.title or self.title or auto_title,
                 "team_id": (line.team_id or self.team_id).id or vals["team_id"],
                 "user_id": (line.user_id or self.user_id).id or vals["user_id"],
                 "scrap_proposed_qty": line.scrap_proposed_qty,
@@ -103,7 +105,7 @@ class QcAlertWizardLine(models.TransientModel):
     lot_name = fields.Char(related="check_id.lot_name")
     fail_qty = fields.Float(related="check_id.fail_qty")
     pass_qty = fields.Float(related="check_id.pass_qty")
-    title = fields.Char(help="Leave empty to use the Title on top.")
+    title = fields.Char(help="Leave empty to use the Title on top, or an automatic title from the proposed actions.")
     team_id = fields.Many2one("qc.team", help="Leave empty to use the Team on top.")
     user_id = fields.Many2one("res.users", string="Responsible", help="Leave empty to use the Responsible on top.")
     scrap_proposed_qty = fields.Float(string="Scrap (Proposed)", digits=(16, 2))

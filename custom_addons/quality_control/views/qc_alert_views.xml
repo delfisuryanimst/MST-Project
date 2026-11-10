@@ -93,9 +93,13 @@
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_check" type="object" class="oe_stat_button"
                                 icon="fa-check" string="Quality Checks" invisible="not check_id"/>
-                        <button name="action_view_conversions" type="object" class="oe_stat_button"
-                                icon="fa-arrow-down" invisible="conversion_count == 0">
-                            <field name="conversion_count" widget="statinfo" string="Downgrade"/>
+                        <button name="action_view_downgrades" type="object" class="oe_stat_button"
+                                icon="fa-arrow-down" invisible="downgrade_count == 0">
+                            <field name="downgrade_count" widget="statinfo" string="Downgrade"/>
+                        </button>
+                        <button name="action_view_qty_adjusts" type="object" class="oe_stat_button"
+                                icon="fa-pencil" invisible="qty_adjust_count == 0">
+                            <field name="qty_adjust_count" widget="statinfo" string="Qty Correction"/>
                         </button>
                         <button name="action_view_scraps" type="object" class="oe_stat_button"
                                 icon="fa-arrows-v">
@@ -107,7 +111,7 @@
                     </div>
                     <group>
                         <group>
-                            <field name="title" required="1" placeholder="mis. SCRAP, DOWNGRADE..."/>
+                            <field name="title" required="1" placeholder="mis. DOWNGRADE, SCRAP DAN RUBAH QTY"/>
                             <field name="check_id" invisible="1"/>
                             <field name="partner_id" string="Partner"/>
                             <field name="picking_id"/>
@@ -161,6 +165,15 @@
                                         <td><field name="downgrade_proposed_qty" nolabel="1"/></td>
                                         <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
                                         <td><field name="downgrade_executed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><button name="action_open_qty_adjust" type="object" string="Qty Correction"
+                                                    class="btn-primary w-100"
+                                                    invisible="not product_id or not lot_id"/></td>
+                                        <td><field name="qty_adjust_proposed_qty" nolabel="1"/></td>
+                                        <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
+                                        <td><field name="qty_adjust_executed_qty" nolabel="1"/></td>
                                         <td><field name="uom_id" nolabel="1" options="{'no_open': True}"/></td>
                                     </tr>
                                     <tr>

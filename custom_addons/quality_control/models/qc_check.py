@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_compare
 
 from .qc_point import TEST_TYPES
 
@@ -52,7 +53,10 @@ class QcCheck(models.Model):
     qty_to_downgrade = fields.Float(string="Quantity to Downgrade", digits=QTY_DIGITS, help="Grade B.")
     qty_to_scrap = fields.Float(string="Quantity to Scrap", digits=QTY_DIGITS, help="BS")
     fail_qty = fields.Float(string="Fail Quantity", digits=QTY_DIGITS)
-    qty_to_sample = fields.Float(string="Quantity to Sample", digits=QTY_DIGITS, help="Quantity cut off as a sample.")
+    qty_to_sample = fields.Float(
+        string="Quantity to Sample", digits=QTY_DIGITS,
+        help="Part of the Pass Quantity that is taken as a sample. It is not added to the total: it stays in "
+             "the Pass and is moved to the sample location later.")
     result = fields.Selection([("pass", "Pass"), ("fail", "Fail")], string="Pass/Fail")
 
     measure = fields.Float()
@@ -166,6 +170,7 @@ class QcCheck(models.Model):
             raise UserError(_(
                 "Select Pass/Fail before validating:\n%s",
                 "\n".join("- %s" % c.name for c in missing)))
+        todo._check_qty_balance()
         for check in todo:
             check._recompute_grading()
             if check.test_type == "pass_fail" and check.result == "fail":
@@ -189,9 +194,46 @@ class QcCheck(models.Model):
     def action_reset(self):
         self.write({"quality_state": "todo"})
 
+    @api.onchange("qty_to_downgrade", "qty_to_scrap")
+    def _onchange_fail_qty(self):
+        """Fail Quantity is what is not Pass: the qty to downgrade plus the qty to scrap."""
+        for check in self:
+            if check.test_type == "pass_fail":
+                check.fail_qty = check.qty_to_downgrade + check.qty_to_scrap
+
+    def _check_qty_balance(self):
+        """Quantity to Test = Pass + Downgrade + Scrap (only when one of them is filled).
+
+        The Sample is not added: it is a part of the Pass Quantity. It stays in the Pass and is moved to the
+        sample location later, so it can never be more than the Pass Quantity.
+        """
+        for check in self.filtered(lambda c: c.test_type == "pass_fail"):
+            total = check.pass_qty + check.qty_to_downgrade + check.qty_to_scrap
+            if total and float_compare(total, check.qty_to_test, precision_digits=2):
+                raise UserError(_(
+                    "%(check)s: Pass (%(pass_qty)s) + Downgrade (%(down)s) + Scrap (%(scrap)s) = %(total)s, "
+                    "but Quantity to Test is %(test)s.",
+                    check=check.name, pass_qty=check.pass_qty, down=check.qty_to_downgrade,
+                    scrap=check.qty_to_scrap, total=total, test=check.qty_to_test))
+            if float_compare(check.qty_to_sample, check.pass_qty, precision_digits=2) > 0:
+                raise UserError(_(
+                    "%(check)s: Sample (%(sample)s) is part of the Pass Quantity (%(pass_qty)s), "
+                    "so it cannot be more than the Pass Quantity.",
+                    check=check.name, sample=check.qty_to_sample, pass_qty=check.pass_qty))
+
+    def _get_qty_adjust_proposed(self):
+        """A Qty Correction is proposed for the Pass Quantity when it differs from the Quantity to Test
+        (part downgraded, scrapped, cut as sample during QC, or a measuring difference up or down)."""
+        self.ensure_one()
+        if self.pass_qty > 0 and float_compare(self.pass_qty, self.qty_to_test, precision_digits=2):
+            return self.pass_qty
+        return 0.0
+
     def _prepare_alert_vals(self):
         self.ensure_one()
         return {
+            "title": self.env["qc.alert"]._get_auto_title(
+                self.qty_to_downgrade, self.qty_to_scrap, self._get_qty_adjust_proposed()),
             "check_id": self.id,
             "picking_id": self.picking_id.id,
             "partner_id": self.partner_id.id,
@@ -200,6 +242,7 @@ class QcCheck(models.Model):
             "team_id": self.team_id.id,
             "user_id": self.user_id.id or self.env.user.id,
             "downgrade_proposed_qty": self.qty_to_downgrade,
+            "qty_adjust_proposed_qty": self._get_qty_adjust_proposed(),
             "scrap_proposed_qty": self.qty_to_scrap,
             "description": self.note or (self.description and "<p>%s</p>" % self.description),
         }

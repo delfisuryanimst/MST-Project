@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Where the samples go: Internal Transfers made for a sample end in one of these locations. -->
+    <data noupdate="1">
+        <record id="stock_location_sample_mst" model="stock.location">
+            <field name="name">Pemakaian Sample MST</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+            <field name="usage">inventory</field>
+        </record>
+        <record id="stock_location_sample_agen_mtx" model="stock.location">
+            <field name="name">Pemakaian Sample Agen MTX</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+            <field name="usage">inventory</field>
+        </record>
+        <record id="stock_location_sample_agen_sl" model="stock.location">
+            <field name="name">Pemakaian Sample Agen SL</field>
+            <field name="location_id" ref="stock.stock_location_locations_virtual"/>
+            <field name="usage">inventory</field>
+        </record>
+    </data>
+</odoo>

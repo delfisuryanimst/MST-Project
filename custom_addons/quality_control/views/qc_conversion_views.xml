@@ -7,6 +7,7 @@
             <tree decoration-muted="state == 'cancel'" decoration-success="state == 'done'">
                 <field name="reference"/>
                 <field name="name"/>
+                <field name="conversion_type"/>
                 <field name="date"/>
                 <field name="origin"/>
                 <field name="alert_id" optional="show"/>
@@ -44,6 +45,7 @@
                     <group>
                         <group>
                             <field name="date" readonly="state != 'draft'"/>
+                            <field name="conversion_type" readonly="state != 'draft'"/>
                             <field name="alert_id" invisible="1"/>
                         </group>
                         <group>

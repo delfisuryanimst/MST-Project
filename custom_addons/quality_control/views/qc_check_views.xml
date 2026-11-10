@@ -8,7 +8,7 @@
                   decoration-success="quality_state == 'pass'" decoration-danger="quality_state == 'fail'">
                 <field name="name" string="Name"/>
                 <field name="picking_id" string="Stock Picking"/>
-                <field name="lot_name" string="Lot Number"/>
+                <field name="lot_name" string="Lot Number" class="text-truncate"/>
                 <field name="qty_to_test" string="Qty to Test" sum="Total"/>
                 <field name="product_id"/>
                 <field name="picking_type_id" string="Operation Type"/>

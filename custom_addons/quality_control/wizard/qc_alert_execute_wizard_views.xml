@@ -15,7 +15,7 @@
                     <field name="note" nolabel="1"/>
                 </div>
                 <field name="line_ids" nolabel="1">
-                    <tree editable="bottom" create="0" delete="0" decoration-muted="has_scrap or has_conversion">
+                    <tree editable="bottom" create="0" decoration-muted="has_scrap or has_conversion">
                         <field name="has_scrap" column_invisible="1"/>
                         <field name="has_conversion" column_invisible="1"/>
                         <field name="alert_id" force_save="1"/>
@@ -34,10 +34,11 @@
                 <separator string="Split Result (optional)"/>
                 <div class="text-muted mb-2">
                     For an alert whose Downgrade Qty goes to several results: one row per result. A row can
-                    be another product, or the alert's own product to cut the roll into pieces. The rows of
-                    one alert must add up to its Downgrade Qty, and its Result Product above is then not used.
-                    Leave Lot empty for an automatic lot: for the alert's own product the biggest piece keeps
-                    the lot and the other pieces get lot-2, lot-3...
+                    be another product, or the alert's own product to cut the roll into pieces. The total of
+                    the rows can be different from the Downgrade Qty (the Downgrade Qty is what is taken from
+                    the lot). The Result Product above is then not used.
+                    Lot is required for a product that is tracked by lot. Type an existing lot to use it, or
+                    a new name to make it. A product without lot tracking has no lot.
                 </div>
                 <field name="split_ids" nolabel="1">
                     <tree editable="bottom">
@@ -45,7 +46,9 @@
                                domain="[('id', 'in', parent.alert_ids)]"/>
                         <field name="product_id" options="{'no_create': True}"/>
                         <field name="qty" sum="Total"/>
-                        <field name="lot_name" placeholder="Automatic"/>
+                        <field name="product_tracking" column_invisible="1"/>
+                        <field name="lot_name" required="product_tracking != 'none'"
+                               readonly="product_tracking == 'none'"/>
                     </tree>
                 </field>
                 <div class="text-muted">

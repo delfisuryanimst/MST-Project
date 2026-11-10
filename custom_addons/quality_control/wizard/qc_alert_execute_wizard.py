@@ -1,6 +1,5 @@
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import float_compare
 from odoo.tools.misc import clean_context
 
 
@@ -36,8 +35,8 @@ class QcAlertExecuteWizard(models.TransientModel):
         if self.env.context.get("active_model") != "qc.alert":
             return values
         selected = self.env["qc.alert"].browse(self.env.context.get("active_ids", []))
-        # An alert that already has a Scrap and a Simplified MO (draft or done) has nothing left to do.
-        alerts = selected.filtered(lambda alert: not alert.scrap_ids or not alert._active_conversion())
+        # An alert with a Scrap and an open Simplified MO, or with nothing left to downgrade, has nothing to do.
+        alerts = selected.filtered(lambda alert: alert._has_work_left())
         if not alerts:
             raise UserError(_(
                 "Nothing left to execute: each of the %s selected Quality Alerts already has a Scrap and "
@@ -160,7 +159,7 @@ class QcAlertExecuteWizardLine(models.TransientModel):
         if splits and not do_downgrade:
             return _("has Split Result rows but no Downgrade Qty")
         if do_downgrade and self.has_conversion:
-            return _("already has a Simplified MO")
+            return _("already has a draft Simplified MO")
         if do_downgrade and splits:
             return splits._get_skip_reason(self.downgrade_qty)
         if do_downgrade and not self.result_product_id:
@@ -181,11 +180,11 @@ class QcAlertExecuteWizardSplit(models.TransientModel):
     product_id = fields.Many2one(
         "product.product", string="Result Product", required=True, domain=[("type", "=", "product")])
     qty = fields.Float(string="Qty", digits=(16, 2), required=True)
+    product_tracking = fields.Selection(related="product_id.tracking")
     lot_name = fields.Char(
         string="Lot",
-        help="Empty: automatic. Same product as the alert: the biggest piece keeps the alert's lot and the "
-             "others get a new lot (lot-2, lot-3...). Another product: the alert's lot name. "
-             "Filled: this lot is used, or made when it does not exist yet.")
+        help="Required when the product is tracked by lot. This lot is used, or made when it does not "
+             "exist yet.")
 
     @api.onchange("alert_id")
     def _onchange_alert_id(self):
@@ -202,10 +201,10 @@ class QcAlertExecuteWizardSplit(models.TransientModel):
         alert = self.alert_id
         if any(split.qty <= 0 for split in self):
             return _("a Split Result row has no qty")
-        total = sum(self.mapped("qty"))
-        if float_compare(total, downgrade_qty, precision_digits=2):
-            return _("the Split Result rows add up to %(total)s, not the Downgrade Qty %(qty)s",
-                     total=total, qty=downgrade_qty)
+        if any(split.product_tracking != "none" and not (split.lot_name or "").strip() for split in self):
+            return _("a Split Result row has no Lot (its product is tracked by lot)")
+        # The total of the rows is free: it may be lower or higher than the Downgrade Qty (the Downgrade Qty
+        # is what is consumed from the lot).
         same = self.filtered(lambda split: split.product_id == alert.product_id)
         if same == self and len(self) == 1 and (self.lot_name or "").strip() in ("", alert.lot_id.name):
             return _("nothing changes: one row with the alert's own product and lot")

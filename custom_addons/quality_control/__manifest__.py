@@ -25,6 +25,7 @@ Kerangka modul Quality Control berdasarkan User Guidebook "Quality Control v17":
         "security/qc_security.xml",
         "security/ir.model.access.csv",
         "data/qc_sequence_data.xml",
+        "data/qc_location_data.xml",
         "data/qc_alert_stage_data.xml",
         "data/qc_dashboard_data.xml",
         "views/qc_team_views.xml",

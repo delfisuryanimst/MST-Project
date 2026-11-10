@@ -19,6 +19,11 @@ class QcConversion(models.Model):
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     origin = fields.Char(string="Source Document")
     alert_id = fields.Many2one("qc.alert", string="Quality Alert", index=True, copy=False)
+    conversion_type = fields.Selection(
+        [("downgrade", "Downgrade"), ("qty_adjust", "Qty Correction")],
+        string="Type", default="downgrade", required=True, copy=False,
+        help="Downgrade: moves qty to another product. Qty Correction: same product and lot, only the qty "
+             "changes. Only Downgrade counts in the Downgrade Qty of the Quality Alert.")
     state = fields.Selection(
         [("draft", "Draft"), ("done", "Validate"), ("cancel", "Cancelled")],
         string="Status", default="draft", required=True, copy=False, tracking=True)
@@ -45,11 +50,7 @@ class QcConversion(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            alert = self.env["qc.alert"].browse(vals.get("alert_id"))
-            if alert and alert._active_conversion():
-                raise UserError(_(
-                    "%(alert)s already has a Simplified MO (%(smo)s).",
-                    alert=alert.name, smo=alert._active_conversion().reference))
+            # An alert can have several Simplified MOs (for example a downgrade and a qty change).
             if vals.get("reference", _("New")) == _("New"):
                 vals["reference"] = self.env["ir.sequence"].next_by_code("qc.conversion") or _("New")
         conversions = super().create(vals_list)
