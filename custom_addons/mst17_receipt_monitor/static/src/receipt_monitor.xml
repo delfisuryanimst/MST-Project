@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mst17_receipt_monitor.ReceiptMonitor">
+        <div class="o_receipt_monitor h-100 overflow-auto">
+            <div class="o_rm_top d-flex flex-wrap align-items-end justify-content-between gap-3">
+                <div class="d-flex flex-wrap align-items-end gap-4">
+                    <div>
+                        <h4 class="mb-1">Monitor Penerimaan</h4>
+                        <div class="text-muted small">Receipts (WH/IN), tanpa draft dan cancel</div>
+                    </div>
+                    <div>
+                        <label class="form-label small text-muted mb-1">Tanggal</label>
+                        <input type="date" class="form-control" t-att-value="state.date" t-on-change="onDateChange"/>
+                    </div>
+                    <div t-if="state.data" class="o_rm_scope_wrap">
+                        <label class="form-label small text-muted mb-1">Cakupan</label>
+                        <div class="o_rm_scope o_rm_click" t-on-click="toggleScopeMenu">
+                            <span t-esc="scopeLabel"/>
+                            <i class="fa fa-caret-down ms-2"/>
+                        </div>
+                        <t t-if="state.scopeOpen">
+                            <div class="o_rm_backdrop" t-on-click="toggleScopeMenu"/>
+                            <div class="o_rm_menu o_rm_scope_menu">
+                                <div class="o_rm_menu_col">
+                                    <div class="o_rm_menu_title">Jenis penerimaan yang dihitung</div>
+                                    <a href="#" class="o_rm_item" t-foreach="state.data.scope_options" t-as="o" t-key="o.key"
+                                       t-on-click.prevent="() => this.toggleScope(o.key)">
+                                        <i t-attf-class="fa fa-check {{ o.selected ? '' : 'invisible' }}"/> <t t-esc="o.label"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div class="d-flex align-items-end gap-3">
+                    <div class="text-muted small pb-2" t-if="state.data">Diperbarui <t t-esc="state.data.updated"/> WIB</div>
+                    <button class="btn btn-secondary" t-on-click="() => this.load()" t-att-disabled="state.loading">Muat ulang</button>
+                </div>
+            </div>
+
+            <div t-if="state.data" class="o_rm_grid">
+                <div class="o_rm_panel">
+                    <h5>Penerimaan (WH/IN)</h5>
+                    <div class="text-muted small mb-2">Klik baris untuk daftar dokumen</div>
+                    <table class="table table-sm table-hover mb-0">
+                        <thead><tr><th>Status</th><th class="text-end">Dok</th><th class="text-end">yds</th><th class="text-end">kg</th><th class="text-end">roll</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.data.groups" t-as="g" t-key="g.key"
+                                t-attf-class="o_rm_click {{ isSelected(g.key) ? 'o_rm_selected' : '' }}"
+                                t-on-click="() => this.select(g.key)">
+                                <td>
+                                    <span t-attf-class="o_rm_pill o_rm_{{ pill(g.key) }}" t-esc="g.label"/>
+                                    <div class="text-muted small" t-if="note(g.key)" t-esc="note(g.key)"/>
+                                </td>
+                                <td class="text-end" t-esc="g.doc"/>
+                                <td class="text-end" t-esc="fmt(g.yds)"/>
+                                <td class="text-end" t-esc="fmt(g.kg)"/>
+                                <td class="text-end" t-esc="fmt(g.roll)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="o_rm_panel">
+                    <h5>Terlambat, belum diterima · per umur</h5>
+                    <div class="text-muted small mb-2">Sejak jadwal terima</div>
+                    <table class="table table-sm table-hover mb-0">
+                        <thead><tr><th>Umur</th><th class="text-end">Dok</th><th class="text-end">yds</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.data.ages" t-as="a" t-key="a.key"
+                                t-attf-class="o_rm_click {{ isSelected('late', a.key) ? 'o_rm_selected' : '' }}"
+                                t-on-click="() => this.select('late', a.key)">
+                                <td><span t-attf-class="{{ a.key == '15' ? 'o_rm_pill o_rm_bad' : '' }}" t-esc="a.label"/></td>
+                                <td class="text-end" t-esc="a.doc"/>
+                                <td class="text-end" t-esc="fmt(a.yds)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div t-if="state.data" class="o_rm_panel o_rm_list">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <h5 class="mb-0">WH/IN <span class="text-muted small">(<t t-esc="visibleRows.length"/> dokumen)</span></h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="o_rm_search">
+                            <span t-if="state.filter.group" class="o_rm_facet">
+                                <b>Filter</b> <t t-esc="groupFilterLabel"/>
+                                <i class="fa fa-times o_rm_remove" t-on-click="clearGroupFilter"/>
+                            </span>
+                            <span t-if="state.filter.age" class="o_rm_facet">
+                                <b>Umur</b> <t t-esc="ageFilterLabel"/>
+                                <i class="fa fa-times o_rm_remove" t-on-click="clearAgeFilter"/>
+                            </span>
+                            <span t-if="state.groupBy" class="o_rm_facet">
+                                <b>Group by</b> <t t-esc="groupByLabel"/>
+                                <i class="fa fa-times o_rm_remove" t-on-click="() => this.setGroupBy(state.groupBy)"/>
+                            </span>
+                            <input class="o_rm_search_input" placeholder="Cari dokumen, partner, PO…"
+                                   t-att-value="state.search" t-on-input="onSearch"/>
+                            <i class="fa fa-caret-down o_rm_caret" t-on-click="toggleMenu"/>
+                            <t t-if="state.menuOpen">
+                                <div class="o_rm_backdrop" t-on-click="closeMenu"/>
+                                <div class="o_rm_menu">
+                                    <div class="o_rm_menu_col">
+                                        <div class="o_rm_menu_title">Filter</div>
+                                        <a href="#" class="o_rm_item" t-foreach="state.data.groups" t-as="g" t-key="g.key"
+                                           t-on-click.prevent="() => this.setGroup(g.key)">
+                                            <i t-attf-class="fa fa-check {{ state.filter.group == g.key ? '' : 'invisible' }}"/> <t t-esc="g.label"/>
+                                        </a>
+                                    </div>
+                                    <div class="o_rm_menu_col">
+                                        <div class="o_rm_menu_title">Umur (terlambat)</div>
+                                        <a href="#" class="o_rm_item" t-foreach="state.data.ages" t-as="a" t-key="a.key"
+                                           t-on-click.prevent="() => this.setAge(a.key)">
+                                            <i t-attf-class="fa fa-check {{ state.filter.age == a.key ? '' : 'invisible' }}"/> <t t-esc="a.label"/>
+                                        </a>
+                                    </div>
+                                    <div class="o_rm_menu_col">
+                                        <div class="o_rm_menu_title">Group by</div>
+                                        <a href="#" class="o_rm_item" t-foreach="groupByOptions" t-as="o" t-key="o.key"
+                                           t-on-click.prevent="() => this.setGroupBy(o.key)">
+                                            <i t-attf-class="fa fa-check {{ state.groupBy == o.key ? '' : 'invisible' }}"/> <t t-esc="o.label"/>
+                                        </a>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <button class="btn btn-secondary" t-on-click="() => this.openList()">Buka daftar / Export</button>
+                    </div>
+                </div>
+                <div t-if="!visibleRows.length" class="text-muted p-3">Tidak ada dokumen.</div>
+                <table t-else="" class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Dokumen</th><th>Partner</th><th>Origin (PO)</th><th>Dari</th><th>Ke</th><th>Jadwal</th>
+                            <th>Umur</th><th>Status</th><th class="text-end">yds</th><th class="text-end">kg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="groupedRows" t-as="pg" t-key="pg_index">
+                            <tr class="o_rm_partner" t-if="pg.label">
+                                <td colspan="10"><t t-esc="pg.label"/> (<t t-esc="pg.rows.length"/>)</td>
+                            </tr>
+                            <tr t-foreach="pg.rows" t-as="row" t-key="row.id">
+                                <td><a href="#" t-on-click.prevent="() => this.openPicking(row.id)" t-esc="row.name"/></td>
+                                <td t-esc="row.partner"/>
+                                <td t-esc="row.origin"/>
+                                <td t-esc="row.source"/>
+                                <td t-esc="row.dest"/>
+                                <td t-esc="row.scheduled"/>
+                                <td><span t-attf-class="{{ row.age == '15' ? 'o_rm_pill o_rm_bad' : '' }}" t-esc="row.age_label"/></td>
+                                <td t-esc="row.state"/>
+                                <td class="text-end" t-esc="fmt(row.yds)"/>
+                                <td class="text-end" t-esc="fmt(row.kg)"/>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <div t-if="hiddenCount" class="o_rm_more">
+                    Menampilkan <t t-esc="visibleRows.length - hiddenCount"/> dari <t t-esc="visibleRows.length"/> dokumen.
+                    <button class="btn btn-link p-0 ms-2" t-on-click="showAll">Tampilkan semua</button>
+                </div>
+            </div>
+
+            <div class="o_rm_foot">
+                <div><b>Satu tampilan untuk gudang</b>Diterima, belum diterima, tertunda yang baru diterima, dan yang terlambat, dalam satu layar per tanggal.</div>
+                <div><b>Satuan</b>yds (m × 1,0936), kg dan roll ditampilkan terpisah.</div>
+                <div><b>Hak akses</b>Grup Inventory dan Purchase. Klik dokumen membuka WH/IN di Odoo. Aktivitas QC ada di Monitor QC0500.</div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_receipt_monitor_line_stock,mst.receipt.monitor.line stock,model_mst_receipt_monitor_line,stock.group_stock_user,1,1,1,1
+access_receipt_monitor_line_purchase,mst.receipt.monitor.line purchase,model_mst_receipt_monitor_line,purchase.group_purchase_user,1,1,1,1

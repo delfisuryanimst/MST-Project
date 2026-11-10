@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="receipt_monitor_line_view_tree" model="ir.ui.view">
+        <field name="name">mst.receipt.monitor.line.tree</field>
+        <field name="model">mst.receipt.monitor.line</field>
+        <field name="arch" type="xml">
+            <!-- A click on a row opens the WH/IN. -->
+            <tree create="0" edit="0" delete="0" action="action_open_picking" type="object"
+                  decoration-danger="age == '15'">
+                <field name="picking_id"/>
+                <field name="partner_id"/>
+                <field name="origin"/>
+                <field name="location_id" optional="show"/>
+                <field name="location_dest_id" optional="show"/>
+                <field name="scheduled_date"/>
+                <field name="date_done" optional="hide"/>
+                <field name="age" widget="badge" decoration-danger="age == '15'"/>
+                <field name="age_days" optional="hide"/>
+                <field name="state"/>
+                <field name="group" optional="hide"/>
+                <field name="yds" sum="Total"/>
+                <field name="kg" sum="Total"/>
+                <field name="roll" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="receipt_monitor_line_view_search" model="ir.ui.view">
+        <field name="name">mst.receipt.monitor.line.search</field>
+        <field name="model">mst.receipt.monitor.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="picking_id"/>
+                <field name="partner_id"/>
+                <field name="origin"/>
+                <filter name="over_14" string="> 14 hari" domain="[('age', '=', '15')]"/>
+                <group expand="1" string="Group By">
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_age" string="Umur" context="{'group_by': 'age'}"/>
+                    <filter name="group_dest" string="Ke" context="{'group_by': 'location_dest_id'}"/>
+                    <filter name="group_group" string="Kelompok" context="{'group_by': 'group'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_receipt_monitor" model="ir.actions.client">
+        <field name="name">Monitor Penerimaan</field>
+        <field name="tag">mst17_receipt_monitor.receipt_monitor</field>
+    </record>
+
+    <menuitem id="menu_monitoring" name="Monitoring" parent="stock.menu_stock_root" sequence="4"
+              groups="stock.group_stock_user,purchase.group_purchase_user"/>
+    <menuitem id="menu_receipt_monitor" name="Monitor Penerimaan" parent="menu_monitoring"
+              action="action_receipt_monitor" sequence="10"
+              groups="stock.group_stock_user,purchase.group_purchase_user"/>
+</odoo>
