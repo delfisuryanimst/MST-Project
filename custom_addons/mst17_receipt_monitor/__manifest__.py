@@ -3,7 +3,7 @@
     "version": "17.0.1.0.0",
     "summary": "Inventory > Monitoring > Monitor Penerimaan: WH/IN received, pending, delayed and late per date",
     "category": "Inventory/Inventory",
-    "author": "Impact",
+    "author": "Delf",
     "license": "LGPL-3",
     "depends": ["stock", "purchase", "web"],
     "data": [
@@ -18,5 +18,5 @@
         ],
     },
     "installable": True,
-    "application": False,
+    "application": True,
 }

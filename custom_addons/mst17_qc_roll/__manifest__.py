@@ -17,7 +17,7 @@ Not in this part: split roll, product change A to A, cancel result, EPC / label 
 MST Mobile and Finance valuation rules.
 """,
     "category": "Inventory/Quality",
-    "author": "Delfi",
+    "author": "Delf",
     "license": "LGPL-3",
     "depends": ["stock", "mail", "quality_control"],
     "data": [

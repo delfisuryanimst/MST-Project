@@ -3,7 +3,7 @@
     "version": "17.0.1.0.0",
     "summary": "Show where each sales order line is: production, QC, delivery, invoice",
     "category": "Sales",
-    "author": "PT. Multi Sandang Tamajaya",
+    "author": "Delf",
     "license": "LGPL-3",
     "depends": ["sale_management", "sale_stock", "purchase_stock", "account"],
     "data": [
@@ -18,5 +18,5 @@
         ],
     },
     "installable": True,
-    "application": False,
+    "application": True,
 }
