@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate: values changed later in the UI are kept on upgrade. -->
+    <data noupdate="1">
+        <!-- Days, from the FDD appendix B. The daily cron refreshes the PO numbers from received POs. -->
+        <record id="param_history" model="ir.config_parameter">
+            <field name="key">mst17_order_calculator.history</field>
+            <field name="value">{
+ "updated": "2026-10-25",
+ "delay_po_local": {"n": 4544, "p25": -0.9, "p50": 1.6, "p90": 41.3},
+ "delay_po_import": {"n": 448, "p25": -1.7, "p50": 13.6, "p90": 68.8},
+ "lt_import": {"n": 448, "p25": 34.2, "p50": 81.8, "p90": 121.3},
+ "greige": {"n": 78, "p25": 8, "p50": 14, "p90": 52},
+ "qc_days": {"p25": 1, "p50": 4, "p90": 21},
+ "ship_days": {"p25": 0, "p50": 1, "p90": 3},
+ "development": {"LD": [7, 10], "SO": [14, 14], "HL": [21, 28]},
+ "process": {
+  "_all": {"n": 1605, "p25": 15, "p50": 25, "p90": 50},
+  "P/D Reaktif": {"n": 344, "p25": 27, "p50": 35, "p90": 56},
+  "PRN disperse": {"n": 112, "p25": 28, "p50": 34, "p90": 50},
+  "P/D disperse": {"n": 325, "p25": 12, "p50": 15, "p90": 48},
+  "P/D disperse + reactive": {"n": 491, "p25": 15, "p50": 20, "p90": 43},
+  "P/D Optic White": {"n": 19, "p25": 17, "p50": 30, "p90": 60},
+  "P/D BW": {"n": 23, "p25": 12, "p50": 21, "p90": 30},
+  "PFP": {"n": 16, "p25": 9, "p50": 11, "p90": 20},
+  "PRN Reaktif": {"n": 74, "p25": 29, "p50": 34, "p90": 44},
+  "PRN Pigment": {"n": 7, "p25": 26, "p50": 51, "p90": 60},
+  "BBSF": {"n": 6, "p25": 6, "p50": 20, "p90": 37},
+  "(other)": {"n": 106, "p25": 15, "p50": 21, "p90": 53}
+ }
+}</field>
+        </record>
+    </data>
+</odoo>

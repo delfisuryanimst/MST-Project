@@ -1,0 +1,134 @@
+// Layout follows "Mockup Order Kalkulator Odoo" (FDD folder).
+
+.o_mst_calc_stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    @include media-breakpoint-down(md) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    > div {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        padding: 12px 18px;
+        border-left: 1px solid $border-color;
+        &:first-child { border-left: 0; }
+        // Direct children only: the number itself is a <span> inside the field widget.
+        > b { display: block; color: $link-color; font-size: 1.75rem; line-height: 1.2; }
+        > b * { color: inherit; font-size: inherit; }
+        > span { color: $text-muted; font-size: 1rem; }
+        @include media-breakpoint-down(md) {
+            padding: 10px 14px;
+            &:nth-child(odd) { border-left: 0; }
+            &:nth-child(n+3) { border-top: 1px solid $border-color; }
+            > b { font-size: 1.4rem; }
+            > span { font-size: 0.9rem; }
+        }
+    }
+}
+
+.o_mst_calc {
+    max-width: 100%;
+    .table-responsive { margin: 8px 0; }
+
+    .o_mst_calc_table {
+        margin: 0;
+        border: 1px solid $border-color;
+        thead th { background: $gray-100; font-weight: 600; }
+        tr.o_mst_calc_hl > td { background: rgba($primary, 0.08); font-weight: 600; }
+    }
+    // Phones: each table row becomes a card, label (data-label) on the left, value on the right.
+    @include media-breakpoint-down(md) {
+        .o_mst_calc_table {
+            border: 0;
+            thead { display: none; }
+            tbody, tr, td { display: block; width: 100%; }
+            tr {
+                border: 1px solid $border-color;
+                border-radius: 6px;
+                margin-bottom: 8px;
+                padding: 6px 12px;
+            }
+            tr.o_mst_calc_hl { background: rgba($primary, 0.08); }
+            tr.o_mst_calc_hl > td { background: transparent; }
+            td {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                border: 0;
+                padding: 3px 0;
+                text-align: right;
+                &::before {
+                    content: attr(data-label);
+                    flex: 0 0 40%;
+                    text-align: left;
+                    color: $text-muted;
+                    font-weight: normal;
+                }
+                &:empty { display: none; }
+            }
+        }
+    }
+
+    .o_mst_calc_alert {
+        border-left: 4px solid;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        overflow-wrap: anywhere;
+        b { display: block; }
+    }
+    .o_mst_calc_ok { border-color: $success; background: rgba($success, 0.15); b { color: darken($success, 15%); } }
+    .o_mst_calc_warn { border-color: $warning; background: rgba($warning, 0.15); }
+    .o_mst_calc_bad { border-color: $danger; background: rgba($danger, 0.1); b { color: darken($danger, 10%); } }
+    .o_mst_calc_info { border-color: $info; background: rgba($info, 0.1); }
+
+    .o_mst_calc_pill {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+    .o_mst_calc_pill_ok { color: darken($success, 10%); background: rgba($success, 0.15); }
+    .o_mst_calc_pill_bad { color: darken($danger, 5%); background: rgba($danger, 0.12); }
+
+    .o_mst_calc_sep {
+        margin: 16px 0 6px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid $border-color;
+        color: $text-muted;
+        font-size: 0.85em;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .o_mst_calc_tips { padding-left: 20px; overflow-wrap: anywhere; }
+    .o_mst_calc_sortable { cursor: pointer; user-select: none; }
+
+    // Tabs: OWL uses .nav-tabs, the HTML version uses hidden radio buttons + labels.
+    .o_mst_calc_tabs {
+        margin-top: 16px;
+        > input { display: none; }
+        > label {
+            display: inline-block;
+            margin: 0 2px -1px 0;
+            padding: 6px 14px;
+            border: 1px solid transparent;
+            border-radius: 4px 4px 0 0;
+            color: $link-color;
+            cursor: pointer;
+        }
+        > input:checked + label {
+            color: $body-color;
+            border-color: $border-color $border-color $white;
+            background: $white;
+        }
+        .o_mst_calc_pane { display: none; padding-top: 8px; border-top: 1px solid $border-color; }
+        .o_mst_calc_tab_orders:checked ~ .o_mst_calc_pane_orders,
+        .o_mst_calc_tab_sequence:checked ~ .o_mst_calc_pane_sequence { display: block; }
+    }
+
+    .o_mst_calc_disclaimer { margin-top: 12px; color: $text-muted; font-size: 0.85em; }
+}

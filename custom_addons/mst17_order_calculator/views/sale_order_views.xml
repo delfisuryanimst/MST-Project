@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_order_calculator" model="ir.ui.view">
+        <field name="name">sale.order.form.order.calculator</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree" position="inside">
+                <button name="action_order_calc_check" type="object" icon="fa-calendar-check-o"
+                        string="Cek" title="Cek siap kirim" class="btn-sm btn-outline-warning"
+                        column_invisible="parent.state not in ('draft', 'sent')"
+                        invisible="display_type or not product_id"/>
+            </xpath>
+            <!-- Phones show the lines as kanban cards, so the button is needed there too. -->
+            <xpath expr="//field[@name='order_line']/kanban/field[@name='name']" position="after">
+                <field name="state"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/kanban//div[hasclass('col-10')]" position="inside">
+                <div class="mt-2" t-if="['draft', 'sent'].includes(record.state.raw_value)">
+                    <button name="action_order_calc_check" type="object" class="btn btn-sm btn-outline-warning">
+                        <i class="fa fa-calendar-check-o me-1" title="Cek siap kirim"/>Cek siap kirim
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

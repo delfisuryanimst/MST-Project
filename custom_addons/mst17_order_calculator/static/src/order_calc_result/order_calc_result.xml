@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mst17_order_calculator.OrderCalcResult">
+        <div class="o_mst_calc">
+            <div t-if="!data" class="text-muted">
+                Isi produk dan jumlah order. Hasil dihitung otomatis setiap isian berubah.
+            </div>
+            <t t-else="">
+                <div t-foreach="data.alerts" t-as="alert" t-key="alert_index"
+                     t-attf-class="o_mst_calc_alert o_mst_calc_{{alert[0]}}">
+                    <b t-esc="alert[1]"/>
+                    <div t-esc="alert[2]"/>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm o_mst_calc_table">
+                        <thead>
+                            <tr><th t-foreach="data.columns" t-as="column" t-key="column_index"
+                                    t-att-class="data.numeric.includes(column_index) ? 'text-end' : ''" t-esc="column"/></tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="data.rows" t-as="row" t-key="row_index"
+                                t-att-class="row.highlight ? 'o_mst_calc_hl' : ''">
+                                <td t-foreach="row.cells" t-as="cell" t-key="cell_index"
+                                    t-att-class="data.numeric.includes(cell_index) ? 'text-end' : ''"
+                                    t-att-data-label="data.columns[cell_index]"><span t-if="row.status and cell_index === 2" t-attf-class="o_mst_calc_pill o_mst_calc_pill_{{row.status}}" t-esc="cell"/><t t-else="" t-esc="cell"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="o_mst_calc_sep">Saran</div>
+                <ul class="o_mst_calc_tips">
+                    <li t-foreach="data.tips" t-as="tip" t-key="tip_index" t-esc="tip"/>
+                </ul>
+                <div t-if="data.warning" class="o_mst_calc_alert o_mst_calc_warn" t-esc="data.warning"/>
+
+                <t t-if="data.orders">
+                    <ul class="nav nav-tabs o_mst_calc_nav mt-3">
+                        <li class="nav-item">
+                            <a href="#" t-attf-class="nav-link {{state.tab === 'orders' ? 'active' : ''}}"
+                               t-on-click.prevent="() => this.state.tab = 'orders'">
+                                Order lain (<t t-esc="data.orders.length"/>)
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" t-attf-class="nav-link {{state.tab === 'sequence' ? 'active' : ''}}"
+                               t-on-click.prevent="() => this.state.tab = 'sequence'">
+                                Urutan stok
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div t-if="state.tab === 'orders'" class="pt-2">
+                        <p t-if="!data.orders.length" class="text-muted">Tidak ada order lain.</p>
+                        <t t-else="">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover o_mst_calc_table">
+                                    <thead>
+                                        <tr>
+                                            <th t-foreach="orderColumns" t-as="column" t-key="column.key"
+                                                t-att-class="'o_mst_calc_sortable' + (column.numeric ? ' text-end' : '')"
+                                                t-on-click="() => this.sortBy(column.key)">
+                                                <t t-esc="column.label"/>
+                                                <i t-if="state.sortKey === column.key"
+                                                   t-attf-class="ms-1 fa fa-angle-{{state.sortAsc ? 'up' : 'down'}}"/>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="orders" t-as="order" t-key="order_index"
+                                            t-att-class="order.past ? 'text-danger' : ''">
+                                            <td data-label="Sales" t-esc="order.sales"/>
+                                            <td data-label="Jenis" t-esc="order.kind"/>
+                                            <td data-label="Tanggal" t-esc="order.date"/>
+                                            <td data-label="Qty" class="text-end" t-esc="order.qty"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button t-if="!state.allOrders and data.orders.length > limit" class="btn btn-link px-0"
+                                    t-on-click="() => this.state.allOrders = true">
+                                Tampilkan semua (<t t-esc="data.orders.length"/>)
+                            </button>
+                        </t>
+                    </div>
+
+                    <div t-if="state.tab === 'sequence'" class="pt-2">
+                        <div class="table-responsive">
+                            <table class="table table-sm o_mst_calc_table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th><th>Kejadian</th>
+                                        <th class="text-end">Qty</th><th class="text-end">Saldo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="sequence" t-as="event" t-key="event_index"
+                                        t-att-class="event.highlight ? 'o_mst_calc_hl' : ''">
+                                        <td data-label="Tanggal" t-esc="event.date"/>
+                                        <td data-label="Kejadian" t-esc="event.label"/>
+                                        <td data-label="Qty" class="text-end" t-esc="event.qty"/>
+                                        <td data-label="Saldo" class="text-end" t-esc="event.balance"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button t-if="!state.allSequence and data.sequence.length > limit" class="btn btn-link px-0"
+                                t-on-click="() => this.state.allSequence = true">
+                            Tampilkan semua (<t t-esc="data.sequence.length"/>)
+                        </button>
+                    </div>
+                </t>
+
+                <p class="o_mst_calc_disclaimer">
+                    <t t-esc="data.disclaimer"/> Stok baru terkunci untuk Anda setelah dibuat quotation dengan Book Stock.
+                    Data per <t t-esc="data.calculated"/>, histori diperbarui <t t-esc="data.updated"/>. Gudang: <t t-esc="data.warehouse"/>.
+                </p>
+            </t>
+        </div>
+    </t>
+</templates>

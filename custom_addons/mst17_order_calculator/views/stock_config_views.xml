@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_location_form_order_calculator" model="ir.ui.view">
+        <field name="name">stock.location.form.order.calculator</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <field name="usage" position="after">
+                <field name="order_calc_role" invisible="usage != 'internal'" placeholder="Ikut lokasi induk"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_category_form_order_calculator" model="ir.ui.view">
+        <field name="name">product.category.form.order.calculator</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="order_calc_fresh"/>
+            </field>
+        </field>
+    </record>
+</odoo>

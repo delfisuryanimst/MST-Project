@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_calculator_form" model="ir.ui.view">
+        <field name="name">order.calculator.form</field>
+        <field name="model">order.calculator</field>
+        <field name="arch" type="xml">
+            <form string="Order Kalkulator">
+                <sheet>
+                    <!-- In the sheet, not the header: on phones Odoo folds header buttons into a menu. -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <button name="action_compute" string="Hitung" type="object" class="btn-primary"/>
+                        <button name="action_reset" string="Reset" type="object" class="btn-secondary"/>
+                        <div class="ms-auto text-muted small" invisible="not product_id">
+                            <i class="fa fa-clock-o me-1" title="Terakhir diperbarui"/><field name="data_info"/>
+                        </div>
+                    </div>
+                    <div class="o_mst_calc_stats" invisible="not product_id">
+                        <div><b><field name="rack_qty"/></b><span>Siap di rak</span></div>
+                        <div><b><field name="qc_qty"/></b><span>Di QC</span></div>
+                        <div><b><field name="demand_qty"/></b><span>SO + booking</span></div>
+                        <div><b><field name="incoming_qty"/></b><span>Akan datang (PO + WIP)</span></div>
+                    </div>
+                    <div class="oe_title" invisible="not product_id">
+                        <h1><field name="product_name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id" options="{'no_create': True}"/>
+                            <field name="product_uom_id" invisible="1"/>
+                            <field name="unit_ids" invisible="1"/>
+                            <field name="qty"/>
+                            <field name="uom_id" widget="radio" options="{'horizontal': true}" invisible="not product_id"/>
+                            <div colspan="2" class="text-muted small" invisible="not product_id">
+                                <field name="unit_note"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="mode" widget="radio" options="{'horizontal': true}"/>
+                            <field name="need_date" invisible="mode != 'date'" required="mode == 'date'"/>
+                            <field name="is_fresh" invisible="1"/>
+                            <field name="development" invisible="not is_fresh" placeholder="Tidak perlu"/>
+                            <field name="process" invisible="not is_fresh"/>
+                            <field name="approve_date" invisible="not is_fresh"/>
+                            <field name="greige" invisible="not is_fresh"/>
+                        </group>
+                    </group>
+                    <separator string="Hasil"/>
+                    <field name="result_html" nolabel="1"/>
+                    <div class="text-muted" invisible="result_html">
+                        Ubah isian lalu klik <b>Hitung</b> untuk memperbarui hasil.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_order_calculator" model="ir.actions.server">
+        <field name="name">Order Kalkulator</field>
+        <field name="model_id" ref="model_order_calculator"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_my()</field>
+        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+    </record>
+
+    <menuitem id="menu_order_calculator"
+              name="Order Kalkulator"
+              parent="sale.product_menu_catalog"
+              action="action_order_calculator"
+              sequence="40"/>
+
+    <!-- Second version: same form and inputs, result rendered by the OWL widget from JSON. -->
+    <record id="view_order_calculator_form_owl" model="ir.ui.view">
+        <field name="name">order.calculator.form.owl</field>
+        <field name="model">order.calculator</field>
+        <field name="inherit_id" ref="view_order_calculator_form"/>
+        <field name="mode">primary</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <button name="action_compute" position="replace"/>
+            <field name="result_html" position="replace">
+                <field name="result_json" widget="order_calc_result" nolabel="1" class="w-100"/>
+            </field>
+            <xpath expr="//sheet/div[hasclass('text-muted')]" position="replace"/>
+        </field>
+    </record>
+
+    <record id="action_order_calculator_owl" model="ir.actions.server">
+        <field name="name">Order Kalkulator (OWL)</field>
+        <field name="model_id" ref="model_order_calculator"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_my(view="mst17_order_calculator.view_order_calculator_form_owl")</field>
+        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+    </record>
+
+    <menuitem id="menu_order_calculator_owl"
+              name="Order Kalkulator (OWL)"
+              parent="sale.product_menu_catalog"
+              action="action_order_calculator_owl"
+              sequence="41"/>
+</odoo>

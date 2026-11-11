@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Result block, rendered on the server into result_html (form and quotation line dialog). -->
+    <template id="result">
+        <div class="o_mst_calc">
+            <div t-foreach="alerts" t-as="alert" t-attf-class="o_mst_calc_alert o_mst_calc_#{alert[0]}">
+                <b t-esc="alert[1]"/>
+                <div t-esc="alert[2]"/>
+            </div>
+
+            <div class="table-responsive"><table class="table table-sm o_mst_calc_table">
+                <thead><tr><th t-foreach="columns" t-as="column" t-att-class="'text-end' if column_index in numeric else None" t-esc="column"/></tr></thead>
+                <tbody>
+                    <tr t-foreach="rows" t-as="row" t-att-class="'o_mst_calc_hl' if row['highlight'] else None">
+                        <td t-foreach="row['cells']" t-as="cell" t-att-data-label="columns[cell_index]" t-att-class="'text-end' if cell_index in numeric else None"><span t-if="row.get('status') and cell_index == 2" t-attf-class="o_mst_calc_pill o_mst_calc_pill_#{row['status']}" t-esc="cell"/><t t-else="" t-esc="cell"/></td>
+                    </tr>
+                </tbody>
+            </table></div>
+
+            <div class="o_mst_calc_sep">Saran</div>
+            <ul class="o_mst_calc_tips">
+                <li t-foreach="tips" t-as="tip" t-esc="tip"/>
+            </ul>
+            <div t-if="warning" class="o_mst_calc_alert o_mst_calc_warn" t-esc="warning"/>
+
+            <!-- Tabs without JavaScript: two hidden radio buttons, the checked one shows its pane. -->
+            <div t-if="orders is not False" class="o_mst_calc_tabs">
+                <input type="radio" class="o_mst_calc_tab_orders" t-att-id="uid + '_o'" t-att-name="uid" checked="checked"/>
+                <label t-att-for="uid + '_o'">Order lain (<t t-esc="len(orders)"/>)</label>
+                <input type="radio" class="o_mst_calc_tab_sequence" t-att-id="uid + '_s'" t-att-name="uid"/>
+                <label t-att-for="uid + '_s'">Urutan stok</label>
+
+                <div class="o_mst_calc_pane o_mst_calc_pane_orders">
+                    <p t-if="not orders" class="text-muted">Tidak ada order lain.</p>
+                    <div t-else="" class="table-responsive"><table class="table table-sm o_mst_calc_table">
+                        <thead><tr><th>Sales</th><th>Jenis</th><th>Tanggal</th><th class="text-end">Qty</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="orders" t-as="order" t-att-class="'text-danger' if order['past'] else None">
+                                <td data-label="Sales" t-esc="order['sales']"/>
+                                <td data-label="Jenis" t-esc="order['kind']"/>
+                                <td data-label="Tanggal" t-esc="order['date']"/>
+                                <td data-label="Qty" class="text-end" t-esc="order['qty']"/>
+                            </tr>
+                        </tbody>
+                    </table></div>
+                </div>
+                <div class="o_mst_calc_pane o_mst_calc_pane_sequence">
+                    <div class="table-responsive"><table class="table table-sm o_mst_calc_table">
+                        <thead><tr><th>Tanggal</th><th>Kejadian</th><th class="text-end">Qty</th><th class="text-end">Saldo</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="sequence" t-as="event" t-att-class="'o_mst_calc_hl' if event.get('highlight') else None">
+                                <td data-label="Tanggal" t-esc="event['date']"/>
+                                <td data-label="Kejadian" t-esc="event['label']"/>
+                                <td data-label="Qty" class="text-end" t-esc="event['qty']"/>
+                                <td data-label="Saldo" class="text-end" t-esc="event['balance']"/>
+                            </tr>
+                        </tbody>
+                    </table></div>
+                </div>
+            </div>
+
+            <p class="o_mst_calc_disclaimer">
+                <t t-esc="disclaimer"/> Stok baru terkunci untuk Anda setelah dibuat quotation dengan Book Stock.
+                Data per <t t-esc="calculated"/>, histori diperbarui <t t-esc="updated"/>. Gudang: <t t-esc="warehouse"/>.
+            </p>
+        </div>
+    </template>
+</odoo>
