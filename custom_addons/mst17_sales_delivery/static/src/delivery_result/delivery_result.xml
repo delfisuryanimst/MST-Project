@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mst17_sales_delivery.DeliveryTable">
+        <div class="table-responsive">
+            <table class="table table-sm o_mst_dp_table mb-0">
+                <thead>
+                    <tr>
+                        <th t-foreach="table.columns" t-as="column" t-key="column_index"
+                            t-attf-class="{{isNumeric(column) ? 'text-end' : ''}} {{sortable ? 'o_mst_dp_sortable' : ''}}"
+                            t-on-click="() => sortable and this.sortBy(column_index)">
+                            <t t-esc="column.label"/>
+                            <i t-if="sortable and sortIcon(column_index)" t-attf-class="fa ms-1 {{sortIcon(column_index)}}"/>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="tableRows" t-as="row" t-key="row_index">
+                        <td t-foreach="row" t-as="cell" t-key="cell_index"
+                            t-att-class="isNumeric(table.columns[cell_index]) ? 'text-end text-nowrap' : ''">
+                            <span t-if="table.columns[cell_index].type === 'pill'"
+                                  t-attf-class="o_mst_dp_pill o_mst_dp_pill_{{cell.pill}}" t-esc="cell.text"/>
+                            <t t-else="" t-esc="format(cell, table.columns[cell_index])"/>
+                        </td>
+                    </tr>
+                    <tr t-if="!table.rows.length">
+                        <td t-att-colspan="table.columns.length" class="text-muted">Tidak ada data.</td>
+                    </tr>
+                </tbody>
+                <tfoot t-if="table.total and table.rows.length">
+                    <tr class="o_mst_dp_total">
+                        <td t-foreach="table.total" t-as="cell" t-key="cell_index"
+                            t-att-class="isNumeric(table.columns[cell_index]) ? 'text-end text-nowrap' : ''"
+                            t-esc="format(cell, table.columns[cell_index])"/>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </t>
+
+    <t t-name="mst17_sales_delivery.SalesDeliveryResult">
+        <div class="o_mst_dp">
+            <div t-if="!data" class="text-muted">Pilih filter lalu klik <b>Tampilkan</b>.</div>
+            <t t-else="">
+                <div class="o_mst_dp_meta">
+                    <i class="fa fa-clock-o me-1" title="Terakhir diperbarui"/>Terakhir diperbarui <t t-esc="data.stamp"/>
+                </div>
+
+                <div class="o_mst_dp_cards">
+                    <div t-foreach="data.cards" t-as="card" t-key="card_index" class="o_mst_dp_card">
+                        <span t-esc="card.label"/>
+                        <b t-esc="card.value"/>
+                        <span t-if="card.change" t-attf-class="o_mst_dp_{{card.change.trend}}" t-esc="card.change.text"/>
+                        <span t-elif="card.note" t-esc="card.note"/>
+                    </div>
+                </div>
+
+                <div class="o_mst_dp_row">
+                    <div class="o_mst_dp_panel">
+                        <h3><span t-esc="data.chart_title"/><span class="fw-normal text-muted">yds</span></h3>
+                        <div class="o_mst_dp_chart">
+                            <div t-foreach="data.chart" t-as="month" t-key="month_index" class="o_mst_dp_col">
+                                <div class="o_mst_dp_bars"
+                                     t-att-title="'Dikirim ' + format(month.sent, {type: 'num'}) + ' · Retur ' + format(month.returned, {type: 'num'}) + ' yds'">
+                                    <div class="o_mst_dp_b1" t-attf-style="height: {{barHeight(month.sent)}}px"/>
+                                    <div class="o_mst_dp_b2" t-attf-style="height: {{barHeight(month.returned)}}px"/>
+                                </div>
+                                <b t-if="month.current" t-esc="month.label"/>
+                                <t t-else="" t-esc="month.label"/>
+                            </div>
+                        </div>
+                        <div class="o_mst_dp_legend">
+                            <span><i class="o_mst_dp_b1"/>Dikirim</span>
+                            <span><i class="o_mst_dp_b2"/>Retur customer</span>
+                        </div>
+                    </div>
+
+                    <div class="o_mst_dp_panel">
+                        <ul class="nav nav-tabs o_mst_dp_tabs">
+                            <li t-foreach="data.tabs" t-as="tab" t-key="tab.key" class="nav-item">
+                                <a href="#" t-attf-class="nav-link {{tab.key === activeTab.key ? 'active' : ''}}"
+                                   t-on-click.prevent="() => this.state.tab = tab.key" t-esc="tab.label"/>
+                            </li>
+                        </ul>
+                        <t t-call="mst17_sales_delivery.DeliveryTable">
+                            <t t-set="table" t-value="activeTab"/>
+                            <t t-set="tableRows" t-value="rows"/>
+                            <t t-set="sortable" t-value="true"/>
+                        </t>
+                        <div t-if="activeTab.rows.length > rows.length" class="o_mst_dp_hint">
+                            <a href="#" t-on-click.prevent="showAll">Tampilkan semua (<t t-esc="activeTab.rows.length"/> baris)</a>
+                        </div>
+                        <div t-if="activeTab.note" class="o_mst_dp_hint" t-esc="activeTab.note"/>
+                    </div>
+                </div>
+
+                <div t-if="data.measure === 'netto'" class="o_mst_dp_note">
+                    Netto = dikirim − retur customer di bulan returnya; produk Pemakaian "Kain Kantong" dihitung 50% (kirim maupun retur).
+                </div>
+
+                <div t-if="data.chains.rows.length" class="o_mst_dp_panel mt-3">
+                    <h3><span>Retur admin (koreksi dokumen, tidak dihitung dobel)</span></h3>
+                    <t t-call="mst17_sales_delivery.DeliveryTable">
+                        <t t-set="table" t-value="data.chains"/>
+                        <t t-set="tableRows" t-value="data.chains.rows"/>
+                        <t t-set="sortable" t-value="false"/>
+                    </t>
+                    <div class="o_mst_dp_hint">
+                        Revisi non-qty = total yds asli dan pengganti selisih &lt; 0,5% (keputusan PPIC 20 Okt 2026).
+                        Pengganti dikenali dari field "Pengganti dari" di transfer.
+                    </div>
+                </div>
+
+                <div class="o_mst_dp_rules">
+                    <div><b>Dasar hitung</b>Qty yang dikirim ke customer (WH/OUT selesai), menurut tanggal kirim WIB. Tanggal SO tidak berpengaruh.</div>
+                    <div><b>Satuan</b>Semua dijadikan yds: m × 1,0936; kg dihitung dari GSM dan lebar finish SKU. Benang dan kg tanpa GSM/lebar dipisah.</div>
+                    <div><b>Siapa melihat apa</b>Sales: dirinya sendiri. Sales All Documents: tim yang dia ikuti. Sales Administrator / PPIC: semua tim.</div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

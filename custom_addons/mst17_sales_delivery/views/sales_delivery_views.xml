@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sales_delivery_report_form" model="ir.ui.view">
+        <field name="name">sales.delivery.report.form</field>
+        <field name="model">sales.delivery.report</field>
+        <field name="arch" type="xml">
+            <form string="Data Pengiriman">
+                <sheet>
+                    <!-- In the sheet, not the header: on phones Odoo folds header buttons into a menu. -->
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button name="action_show" string="Tampilkan" type="object" class="btn-primary"/>
+                        <button name="action_export" string="Export Excel" type="object" class="btn-secondary"/>
+                    </div>
+                    <field name="allowed_team_ids" invisible="1"/>
+                    <field name="allowed_user_ids" invisible="1"/>
+                    <group class="o_mst_dp_filters">
+                        <group>
+                            <field name="period" widget="radio" options="{'horizontal': true}"/>
+                            <field name="month" invisible="period != 'month'" required="period == 'month'"/>
+                            <field name="until_date" invisible="period != 'ytd_date'" required="period == 'ytd_date'"/>
+                        </group>
+                        <group>
+                            <field name="team_id" placeholder="Semua tim saya" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="salesman_id" placeholder="Semua" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="measure" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                    </group>
+                    <field name="result_json" widget="sales_delivery_result" nolabel="1" class="w-100"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sales_delivery_report" model="ir.actions.server">
+        <field name="name">Data Pengiriman</field>
+        <field name="model_id" ref="model_sales_delivery_report"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_my()</field>
+        <field name="groups_id" eval="[(4, ref('sales_team.group_sale_salesman')), (4, ref('group_delivery_all'))]"/>
+    </record>
+
+    <menuitem id="menu_sales_delivery_report"
+              name="Data Pengiriman"
+              parent="sale.menu_sale_report"
+              action="action_sales_delivery_report"
+              groups="sales_team.group_sale_salesman,mst17_sales_delivery.group_delivery_all"
+              sequence="20"/>
+</odoo>
