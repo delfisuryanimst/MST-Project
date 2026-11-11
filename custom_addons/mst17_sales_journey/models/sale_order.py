@@ -1,6 +1,4 @@
-import json
-
-from odoo import api, fields, models
+from odoo import fields, models
 from odoo.tools.misc import format_amount
 
 from .sale_order_line import JOURNEY_CONCLUSIONS, JOURNEY_STAGES, _fmt
@@ -11,15 +9,18 @@ CONCLUSION_COLORS = {"ready": "ok", "waiting_qc": "warn", "short": "bad"}
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    # Built fresh each time the form is opened; nothing is stored.
+    # Built when the form is read; nothing is stored. It has no @api.depends on purpose:
+    # with one, every edit of an order line in the form would rebuild all the cards.
     journey_html = fields.Html(compute="_compute_journey_html", sanitize=False)
 
-    @api.depends("order_line")
     def _compute_journey_html(self):
         qweb = self.env["ir.qweb"]
+        Line = self.env["sale.order.line"]
+        settings = Line._journey_settings()
         for order in self:
             lines = order.order_line.filtered(lambda l: not l.display_type and not l.is_downpayment)
-            cards = [order._journey_card(json.loads(line.journey_data)) for line in lines]
+            # An order that is not saved yet has nothing to follow.
+            cards = [order._journey_card(line._journey_build(settings)) for line in lines] if order.id else []
             order.journey_html = qweb._render("mst17_sales_journey.journey_cards", {"cards": cards})
 
     def _journey_card(self, data):

@@ -7,7 +7,6 @@
         <field name="arch" type="xml">
             <tree create="0" edit="0" delete="0" default_group_by="journey_stage"
                   decoration-danger="journey_overdue" decoration-muted="journey_stage in ('done', 'cancel')">
-                <field name="currency_id" column_invisible="True"/>
                 <field name="order_id" decoration-bf="1"/>
                 <field name="order_partner_id"/>
                 <field name="salesman_id" widget="many2one_avatar_user" optional="show"/>
@@ -48,22 +47,14 @@
         <field name="priority">100</field>
         <field name="arch" type="xml">
             <kanban create="0" edit="0" delete="0" class="o_kanban_mobile" group_create="0" records_draggable="0">
-                <field name="order_id"/>
-                <field name="order_partner_id"/>
-                <field name="salesman_id"/>
-                <field name="product_id"/>
-                <field name="product_uom"/>
-                <field name="product_uom_qty"/>
-                <field name="journey_stage"/>
+                <!-- Only the fields the template reads with record.xxx.raw_value; the rest load where they are shown. -->
                 <field name="journey_conclusion"/>
                 <field name="journey_short_qty"/>
-                <field name="journey_qty_remaining"/>
                 <field name="journey_qc_age"/>
                 <field name="journey_qc_warning"/>
                 <field name="journey_shared"/>
                 <field name="journey_overdue"/>
                 <field name="journey_delivery_date"/>
-                <field name="journey_invoice_state"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card position-relative">

@@ -2,6 +2,8 @@ import json
 from collections import defaultdict
 
 from odoo import api, fields, models
+from odoo.osv import expression
+from odoo.tools import split_every
 
 JOURNEY_STAGES = [
     ("quotation", "Quotation / Booking"),
@@ -26,11 +28,15 @@ INVOICE_STATES = [
     ("full", "Fully Invoiced"),
 ]
 
+# The cron saves its work after every batch, so no row stays locked for the whole run.
+CRON_BATCH_SIZE = 500
+
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    # Full journey of the line as JSON. Not stored: always computed fresh when read.
+    # Full journey of the line as JSON. Not stored and not used by the screens:
+    # it only exists for other readers (e.g. an API) and costs nothing until it is read.
     journey_data = fields.Text(compute="_compute_journey_data")
 
     # Stored copy of the main numbers, filled by the cron, so the list can filter and group.
@@ -48,48 +54,74 @@ class SaleOrderLine(models.Model):
     journey_overdue = fields.Boolean(string="Late", readonly=True,
                                      help="Delivery Date has passed and there is still quantity to deliver.")
     journey_invoice_state = fields.Selection(INVOICE_STATES, string="Invoiced", readonly=True)
+    journey_updated = fields.Datetime(string="Journey Updated On", readonly=True)
+    # Stored copies of order and product values, only so the list can sort and group by them.
     journey_delivery_date = fields.Datetime(related="order_id.commitment_date", store=True)
-    # Stored copies so the list can group by them.
     journey_team_id = fields.Many2one(related="order_id.team_id", store=True)
     journey_categ_id = fields.Many2one(related="product_id.categ_id", store=True)
-    journey_updated = fields.Datetime(string="Journey Updated On", readonly=True)
 
-    @api.depends("product_uom_qty", "qty_delivered", "qty_invoiced", "order_id.state")
     def _compute_journey_data(self):
         settings = self._journey_settings()
         for line in self:
-            line.journey_data = json.dumps(line._journey_build(settings), default=str)
+            line.journey_data = json.dumps(line._journey_build(settings))
 
     # ------------------------------------------------------------------
-    # Stored status (cron)
+    # Stored status (cron and the "Update Journey" action)
     # ------------------------------------------------------------------
 
     @api.model
-    def _cron_update_journey(self):
-        lines = self.search([
-            ("display_type", "=", False),
-            ("is_downpayment", "=", False),
-            "|", ("journey_stage", "=", False), ("journey_stage", "not in", ("done", "cancel")),
+    def _journey_cron_domain(self):
+        """Only lines whose stored status can still change."""
+        return expression.AND([
+            [("display_type", "=", False), ("is_downpayment", "=", False)],
+            expression.OR([
+                [("journey_stage", "=", False)],
+                [("order_id.state", "=", "sale"), ("journey_stage", "not in", ("done", "cancel"))],
+                [("order_id.state", "in", ("draft", "sent")), ("journey_stage", "!=", "quotation")],
+                [("order_id.state", "=", "cancel"), ("journey_stage", "!=", "cancel")],
+            ]),
         ])
-        lines._journey_refresh()
+
+    @api.model
+    def _cron_update_journey(self):
+        line_ids = self.search(self._journey_cron_domain()).ids
+        for batch_ids in split_every(CRON_BATCH_SIZE, line_ids):
+            self.browse(batch_ids)._journey_refresh()
+            self.env.cr.commit()
+            self.env.invalidate_all()
 
     def _journey_refresh(self):
+        """Save the current journey of each line, writing only what changed."""
         settings = self._journey_settings()
-        now = fields.Datetime.now()
+        changes = defaultdict(lambda: self.browse())  # new values -> lines that get them
         for line in self:
-            data = line._journey_build(settings)
-            line.write({
-                "journey_stage": data["stage"],
-                "journey_conclusion": data["conclusion"],
-                "journey_short_qty": data["short_qty"],
-                "journey_qty_remaining": data["remaining"],
-                "journey_qc_age": data["qc_age"],
-                "journey_qc_warning": any(b["warning"] for b in data["qc_batches"]),
-                "journey_shared": data["shared"],
-                "journey_overdue": data["overdue"],
-                "journey_invoice_state": data["invoice"]["state"],
-                "journey_updated": now,
-            })
+            values = line._journey_stored_values(line._journey_build(settings))
+            if line._journey_has_changed(values):
+                changes[tuple(values.items())] |= line
+        for values, lines in changes.items():
+            lines.write(dict(values))
+        self.write({"journey_updated": fields.Datetime.now()})
+
+    def _journey_stored_values(self, data):
+        return {
+            "journey_stage": data["stage"],
+            "journey_conclusion": data["conclusion"],
+            "journey_short_qty": data["short_qty"],
+            "journey_qty_remaining": data["remaining"],
+            "journey_qc_age": data["qc_age"],
+            "journey_qc_warning": any(batch["warning"] for batch in data["qc_batches"]),
+            "journey_shared": data["shared"],
+            "journey_overdue": data["overdue"],
+            "journey_invoice_state": data["invoice"]["state"],
+        }
+
+    def _journey_has_changed(self, values):
+        """Compare in the field's own precision, so 0.1 + 0.2 does not count as a change."""
+        self.ensure_one()
+        return any(
+            self[name] != self._fields[name].convert_to_cache(value, self)
+            for name, value in values.items()
+        )
 
     def action_journey_refresh(self):
         self._journey_refresh()
@@ -112,12 +144,13 @@ class SaleOrderLine(models.Model):
     def _journey_settings(self):
         params = self.env["ir.config_parameter"].sudo()
         qc_name = params.get_param("mst17_sales_journey.qc_location_name", "QC0500")
-        qc_locations = self.env["stock.location"].sudo().search([("name", "=", qc_name), ("usage", "=", "internal")])
+        Location = self.env["stock.location"].sudo()
+        qc_locations = Location.search([("name", "=", qc_name), ("usage", "=", "internal")])
         if qc_locations:
-            qc_locations = self.env["stock.location"].sudo().search([("id", "child_of", qc_locations.ids)])
+            qc_locations = Location.search([("id", "child_of", qc_locations.ids)])
         return {
             "qc_location_name": qc_name,
-            "qc_location_ids": set(qc_locations.ids),
+            "qc_location_ids": qc_locations.ids,
             "qc_warning_days": int(params.get_param("mst17_sales_journey.qc_warning_days", 14)),
             "today": fields.Date.context_today(self),
             "now": fields.Datetime.now(),
@@ -132,35 +165,27 @@ class SaleOrderLine(models.Model):
         qty = line.product_uom_qty
         delivered = line.qty_delivered
         remaining = max(qty - delivered, 0.0)
+        confirmed = order.state == "sale"
 
-        purchase_lines = line._journey_purchase_lines()
+        # Quotations and cancelled orders have no purchase to follow, and a fully
+        # delivered line does not need stock numbers: skip those lookups.
+        purchase_lines = line._journey_purchase_lines() if confirmed else line.env["purchase.order.line"]
         shared_orders = line._journey_shared_orders(purchase_lines)
-        shared = bool(shared_orders)
-        rack, qc_batches = line._journey_stock(purchase_lines, settings)
+        rack, qc_batches = (0.0, [])
+        if confirmed and remaining > 0:
+            rack, qc_batches = line._journey_stock(purchase_lines, settings)
 
-        # QC info is not useful once the line is fully delivered.
-        if remaining <= 0:
-            qc_batches = []
-        qc_total = sum(b["qty"] for b in qc_batches)
-        qc_age = max((b["age"] for b in qc_batches), default=0)
+        qc_total = sum(batch["qty"] for batch in qc_batches)
+        qc_age = max((batch["age"] for batch in qc_batches), default=0)
         not_arrived = max(remaining - rack - qc_total, 0.0)
-
         invoice = line._journey_invoice()
         overdue = bool(
-            order.state == "sale" and remaining > 0
+            confirmed and remaining > 0
             and order.commitment_date and order.commitment_date < settings["now"]
         )
-
-        stage = line._journey_stage(remaining, rack, qc_total)
-        conclusion, short_qty = False, 0.0
-        if order.state == "sale" and remaining > 0 and not shared:
-            if remaining <= rack:
-                conclusion = "ready"
-            elif remaining <= rack + qc_total:
-                conclusion = "waiting_qc"
-            else:
-                conclusion = "short"
-                short_qty = remaining - rack - qc_total
+        shared = bool(shared_orders)
+        conclusion, short_qty = line._journey_conclusion(confirmed and remaining > 0 and not shared,
+                                                         remaining, rack, qc_total)
 
         return {
             "product": line.product_id.display_name,
@@ -178,21 +203,30 @@ class SaleOrderLine(models.Model):
             "invoice": invoice,
             "shared": shared,
             "shared_orders": shared_orders.mapped("name"),
-            "from_stock": order.state == "sale" and not purchase_lines,
+            "from_stock": confirmed and not purchase_lines,
             "overdue": overdue,
             "order_state": order.state,
-            "stage": stage,
+            "stage": line._journey_stage(remaining, rack, qc_total),
             "conclusion": conclusion,
             "short_qty": short_qty,
             "steps": line._journey_steps(purchase_lines, remaining, rack, qc_total, invoice),
         }
 
+    def _journey_conclusion(self, applies, remaining, rack, qc_total):
+        """Return (conclusion, missing quantity)."""
+        if not applies:
+            return False, 0.0
+        if remaining <= rack:
+            return "ready", 0.0
+        if remaining <= rack + qc_total:
+            return "waiting_qc", 0.0
+        return "short", remaining - rack - qc_total
+
     def _journey_purchase_lines(self):
         """Purchase lines that supply this line (make-to-order chain)."""
-        moves = self.move_ids
-        if not moves:
+        if not self.move_ids:
             return self.env["purchase.order.line"]
-        chain = self.env["stock.move"].browse(moves._rollup_move_origs())
+        chain = self.env["stock.move"].browse(self.move_ids._rollup_move_origs())
         purchase_lines = chain.created_purchase_line_ids | chain.purchase_line_id
         return purchase_lines.filtered(lambda p: p.state != "cancel")
 
@@ -207,50 +241,58 @@ class SaleOrderLine(models.Model):
     def _journey_stock(self, purchase_lines, settings):
         """Return (qty on rack, list of QC batches) in the line unit.
         With a linked purchase, follow the lots it received. Without one
-        (sold from stock), use what is reserved on the pending delivery."""
-        to_line_uom = lambda q: self.product_id.uom_id._compute_quantity(q, self.product_uom)
+        (sold from stock), use what is reserved on the pending delivery.
+        Quantities are summed in the database: a purchase can hold thousands of lots."""
+        uom = self.product_id.uom_id
 
         if not purchase_lines:
             pending = self.move_ids.filtered(
                 lambda m: m.state in ("assigned", "partially_available")
                 and m.location_dest_id.usage == "customer"
             )
-            return to_line_uom(sum(pending.mapped("quantity"))), []
+            return uom._compute_quantity(sum(pending.mapped("quantity")), self.product_uom), []
 
-        # Arrival date per lot = date the receipt was validated.
-        arrival_by_lot = {}
-        receipts = purchase_lines.move_ids.filtered(lambda m: m.state == "done")
-        for move_line in receipts.move_line_ids.filtered("lot_id"):
-            current = arrival_by_lot.get(move_line.lot_id.id)
-            if not current or move_line.date < current:
-                arrival_by_lot[move_line.lot_id.id] = move_line.date
+        received = purchase_lines.move_ids.filtered(lambda m: m.state == "done")
+        # Arrival date of a lot = when its receipt was first validated.
+        arrival_by_lot = {
+            lot.id: arrival for lot, arrival in self.env["stock.move.line"]._read_group(
+                [("move_id", "in", received.ids), ("lot_id", "!=", False)],
+                groupby=["lot_id"], aggregates=["date:min"],
+            )
+        }
         if not arrival_by_lot:
             return 0.0, []
 
-        quants = self.env["stock.quant"].sudo().search([
+        quant_domain = [
             ("lot_id", "in", list(arrival_by_lot)),
             ("location_id.usage", "=", "internal"),
             ("quantity", ">", 0),
-        ])
-        rack = 0.0
+        ]
+        Quant = self.env["stock.quant"]
+        qc_ids = settings["qc_location_ids"]
+
+        rack = Quant._read_group(
+            quant_domain + [("location_id", "not in", qc_ids)], aggregates=["quantity:sum"],
+        )[0][0] or 0.0
+
         qc_by_date = defaultdict(float)
-        for quant in quants:
-            if quant.location_id.id in settings["qc_location_ids"]:
-                arrival = fields.Date.to_date(arrival_by_lot[quant.lot_id.id])
-                qc_by_date[arrival] += quant.quantity
-            else:
-                rack += quant.quantity
+        if qc_ids:
+            for lot, quantity in Quant._read_group(
+                quant_domain + [("location_id", "in", qc_ids)],
+                groupby=["lot_id"], aggregates=["quantity:sum"],
+            ):
+                qc_by_date[fields.Date.to_date(arrival_by_lot[lot.id])] += quantity
 
         batches = []
         for arrival, quantity in sorted(qc_by_date.items()):
             age = (settings["today"] - arrival).days
             batches.append({
                 "date": arrival.isoformat(),
-                "qty": to_line_uom(quantity),
+                "qty": uom._compute_quantity(quantity, self.product_uom),
                 "age": age,
                 "warning": age > settings["qc_warning_days"],
             })
-        return to_line_uom(rack), batches
+        return uom._compute_quantity(rack, self.product_uom), batches
 
     def _journey_invoice(self):
         invoice_lines = self.invoice_lines.filtered(
@@ -328,6 +370,8 @@ class SaleOrderLine(models.Model):
         qty = self.product_uom_qty
         confirmed = order.state == "sale"
         arrived = min(self.qty_delivered + rack + qc_total, qty)
+        # Sold from stock: nothing is received for this line, it only waits for a reservation.
+        from_stock = confirmed and not purchase_lines
 
         steps = [{
             "key": "quotation",
@@ -338,35 +382,35 @@ class SaleOrderLine(models.Model):
         booking = self._journey_booking_step()
         if booking:
             steps.append(booking)
-        steps.append({
-            "key": "confirm",
-            "title": "Sales Order",
-            "done": confirmed,
-            "info": order.date_order.strftime("%d %b") if confirmed else "",
-        })
-        steps.append(self._journey_production_step(purchase_lines))
-        # Sold from stock: nothing is received for this line, it only waits for a reservation.
-        from_stock = confirmed and not purchase_lines
-        steps.append({
-            "key": "arrival",
-            "title": "Reserved" if from_stock else "Receipt & QC",
-            "done": confirmed and arrived >= qty and qc_total <= 0,
-            "info": "%s / %s" % (_fmt(arrived), _fmt(qty)),
-        })
-        steps.append({
-            "key": "delivery",
-            "title": "Delivery",
-            "done": confirmed and remaining <= 0,
-            "info": "%s / %s" % (_fmt(self.qty_delivered), _fmt(qty)),
-        })
-        steps.append({
-            "key": "invoice",
-            "title": "Invoice",
-            "done": invoice["state"] == "full",
-            "info": "%s posted" % invoice["count"] if invoice["count"] else "-",
-        })
+        steps += [
+            {
+                "key": "confirm",
+                "title": "Sales Order",
+                "done": confirmed,
+                "info": order.date_order.strftime("%d %b") if confirmed else "",
+            },
+            self._journey_production_step(purchase_lines),
+            {
+                "key": "arrival",
+                "title": "Reserved" if from_stock else "Receipt & QC",
+                "done": confirmed and arrived >= qty and qc_total <= 0,
+                "info": "%s / %s" % (_fmt(arrived), _fmt(qty)),
+            },
+            {
+                "key": "delivery",
+                "title": "Delivery",
+                "done": confirmed and remaining <= 0,
+                "info": "%s / %s" % (_fmt(self.qty_delivered), _fmt(qty)),
+            },
+            {
+                "key": "invoice",
+                "title": "Invoice",
+                "done": invoice["state"] == "full",
+                "info": "%s posted" % invoice["count"] if invoice["count"] else "-",
+            },
+        ]
 
-        # Mark the first step that is not done as the current one.
+        # The first step that is not done is the current one.
         current_found = order.state == "cancel"
         for step in steps:
             if step.get("skipped"):
