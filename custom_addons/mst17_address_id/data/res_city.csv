@@ -1,0 +1,515 @@
+name,state_code
+Kabupaten Aceh Selatan,11
+Kabupaten Aceh Tenggara,11
+Kabupaten Aceh Timur,11
+Kabupaten Aceh Tengah,11
+Kabupaten Aceh Barat,11
+Kabupaten Aceh Besar,11
+Kabupaten Pidie,11
+Kabupaten Aceh Utara,11
+Kabupaten Simeulue,11
+Kabupaten Aceh Singkil,11
+Kabupaten Bireuen,11
+Kabupaten Aceh Barat Daya,11
+Kabupaten Gayo Lues,11
+Kabupaten Aceh Jaya,11
+Kabupaten Nagan Raya,11
+Kabupaten Aceh Tamiang,11
+Kabupaten Bener Meriah,11
+Kabupaten Pidie Jaya,11
+Kota Banda Aceh,11
+Kota Sabang,11
+Kota Lhokseumawe,11
+Kota Langsa,11
+Kota Subulussalam,11
+Kabupaten Tapanuli Tengah,12
+Kabupaten Tapanuli Utara,12
+Kabupaten Tapanuli Selatan,12
+Kabupaten Nias,12
+Kabupaten Langkat,12
+Kabupaten Karo,12
+Kabupaten Deli Serdang,12
+Kabupaten Simalungun,12
+Kabupaten Asahan,12
+Kabupaten Labuhanbatu,12
+Kabupaten Dairi,12
+Kabupaten Toba,12
+Kabupaten Mandailing Natal,12
+Kabupaten Nias Selatan,12
+Kabupaten Pakpak Bharat,12
+Kabupaten Humbang Hasundutan,12
+Kabupaten Samosir,12
+Kabupaten Serdang Bedagai,12
+Kabupaten Batu Bara,12
+Kabupaten Padang Lawas Utara,12
+Kabupaten Padang Lawas,12
+Kabupaten Labuhanbatu Selatan,12
+Kabupaten Labuhanbatu Utara,12
+Kabupaten Nias Utara,12
+Kabupaten Nias Barat,12
+Kota Medan,12
+Kota Pematangsiantar,12
+Kota Sibolga,12
+Kota Tanjungbalai,12
+Kota Binjai,12
+Kota Tebing Tinggi,12
+Kota Padangsidimpuan,12
+Kota Gunungsitoli,12
+Kabupaten Pesisir Selatan,13
+Kabupaten Solok,13
+Kabupaten Sijunjung,13
+Kabupaten Tanah Datar,13
+Kabupaten Padang Pariaman,13
+Kabupaten Agam,13
+Kabupaten Lima Puluh Kota,13
+Kabupaten Pasaman,13
+Kabupaten Kepulauan Mentawai,13
+Kabupaten Dharmasraya,13
+Kabupaten Solok Selatan,13
+Kabupaten Pasaman Barat,13
+Kota Padang,13
+Kota Solok,13
+Kota Sawahlunto,13
+Kota Padang Panjang,13
+Kota Bukittinggi,13
+Kota Payakumbuh,13
+Kota Pariaman,13
+Kabupaten Kampar,14
+Kabupaten Indragiri Hulu,14
+Kabupaten Bengkalis,14
+Kabupaten Indragiri Hilir,14
+Kabupaten Pelalawan,14
+Kabupaten Rokan Hulu,14
+Kabupaten Rokan Hilir,14
+Kabupaten Siak,14
+Kabupaten Kuantan Singingi,14
+Kabupaten Kepulauan Meranti,14
+Kota Pekanbaru,14
+Kota Dumai,14
+Kabupaten Kerinci,15
+Kabupaten Merangin,15
+Kabupaten Sarolangun,15
+Kabupaten Batanghari,15
+Kabupaten Muaro Jambi,15
+Kabupaten Tanjung Jabung Barat,15
+Kabupaten Tanjung Jabung Timur,15
+Kabupaten Bungo,15
+Kabupaten Tebo,15
+Kota Jambi,15
+Kota Sungai Penuh,15
+Kabupaten Ogan Komering Ulu,16
+Kabupaten Ogan Komering Ilir,16
+Kabupaten Muara Enim,16
+Kabupaten Lahat,16
+Kabupaten Musi Rawas,16
+Kabupaten Musi Banyuasin,16
+Kabupaten Banyuasin,16
+Kabupaten Ogan Komering Ulu Timur,16
+Kabupaten Ogan Komering Ulu Selatan,16
+Kabupaten Ogan Ilir,16
+Kabupaten Empat Lawang,16
+Kabupaten Penukal Abab Lematang Ilir,16
+Kabupaten Musi Rawas Utara,16
+Kota Palembang,16
+Kota Pagar Alam,16
+Kota Lubuk Linggau,16
+Kota Prabumulih,16
+Kabupaten Bengkulu Selatan,17
+Kabupaten Rejang Lebong,17
+Kabupaten Bengkulu Utara,17
+Kabupaten Kaur,17
+Kabupaten Seluma,17
+Kabupaten Mukomuko,17
+Kabupaten Lebong,17
+Kabupaten Kepahiang,17
+Kabupaten Bengkulu Tengah,17
+Kota Bengkulu,17
+Kabupaten Lampung Selatan,18
+Kabupaten Lampung Tengah,18
+Kabupaten Lampung Utara,18
+Kabupaten Lampung Barat,18
+Kabupaten Tulang Bawang,18
+Kabupaten Tanggamus,18
+Kabupaten Lampung Timur,18
+Kabupaten Way Kanan,18
+Kabupaten Pesawaran,18
+Kabupaten Pringsewu,18
+Kabupaten Mesuji,18
+Kabupaten Tulang Bawang Barat,18
+Kabupaten Pesisir Barat,18
+Kota Bandar Lampung,18
+Kota Metro,18
+Kabupaten Bangka,19
+Kabupaten Belitung,19
+Kabupaten Bangka Selatan,19
+Kabupaten Bangka Tengah,19
+Kabupaten Bangka Barat,19
+Kabupaten Belitung Timur,19
+Kota Pangkal Pinang,19
+Kabupaten Bintan,21
+Kabupaten Karimun,21
+Kabupaten Natuna,21
+Kabupaten Lingga,21
+Kabupaten Kepulauan Anambas,21
+Kota Batam,21
+Kota Tanjung Pinang,21
+Kabupaten Administrasi Kepulauan Seribu,31
+Kota Administrasi Jakarta Pusat,31
+Kota Administrasi Jakarta Utara ,31
+Kota Administrasi Jakarta Barat,31
+Kota Administrasi Jakarta Selatan,31
+Kota Administrasi Jakarta Timur,31
+Kabupaten Bogor,32
+Kabupaten Sukabumi,32
+Kabupaten Cianjur,32
+Kabupaten Bandung,32
+Kabupaten Garut,32
+Kabupaten Tasikmalaya,32
+Kabupaten Ciamis,32
+Kabupaten Kuningan,32
+Kabupaten Cirebon,32
+Kabupaten Majalengka,32
+Kabupaten Sumedang,32
+Kabupaten Indramayu,32
+Kabupaten Subang,32
+Kabupaten Purwakarta,32
+Kabupaten Karawang,32
+Kabupaten Bekasi,32
+Kabupaten Bandung Barat,32
+Kabupaten Pangandaran,32
+Kota Bogor,32
+Kota Sukabumi,32
+Kota Bandung,32
+Kota Cirebon,32
+Kota Bekasi,32
+Kota Depok,32
+Kota Cimahi,32
+Kota Tasikmalaya,32
+Kota Banjar,32
+Kabupaten Cilacap,33
+Kabupaten Banyumas,33
+Kabupaten Purbalingga,33
+Kabupaten Banjarnegara,33
+Kabupaten Kebumen,33
+Kabupaten Purworejo,33
+Kabupaten Wonosobo,33
+Kabupaten Magelang,33
+Kabupaten Boyolali,33
+Kabupaten Klaten,33
+Kabupaten Sukoharjo,33
+Kabupaten Wonogiri,33
+Kabupaten Karanganyar,33
+Kabupaten Sragen,33
+Kabupaten Grobogan,33
+Kabupaten Blora,33
+Kabupaten Rembang,33
+Kabupaten Pati,33
+Kabupaten Kudus,33
+Kabupaten Jepara,33
+Kabupaten Demak,33
+Kabupaten Semarang,33
+Kabupaten Temanggung,33
+Kabupaten Kendal,33
+Kabupaten Batang,33
+Kabupaten Pekalongan,33
+Kabupaten Pemalang,33
+Kabupaten Tegal,33
+Kabupaten Brebes,33
+Kota Magelang,33
+Kota Surakarta,33
+Kota Salatiga,33
+Kota Semarang,33
+Kota Pekalongan,33
+Kota Tegal,33
+Kabupaten Kulon Progo,34
+Kabupaten Bantul,34
+Kabupaten Gunungkidul,34
+Kabupaten Sleman,34
+Kota Yogyakarta,34
+Kabupaten Pacitan,35
+Kabupaten Ponorogo,35
+Kabupaten Trenggalek,35
+Kabupaten Tulungagung,35
+Kabupaten Blitar,35
+Kabupaten Kediri,35
+Kabupaten Malang,35
+Kabupaten Lumajang,35
+Kabupaten Jember,35
+Kabupaten Banyuwangi,35
+Kabupaten Bondowoso,35
+Kabupaten Situbondo,35
+Kabupaten Probolinggo,35
+Kabupaten Pasuruan,35
+Kabupaten Sidoarjo,35
+Kabupaten Mojokerto,35
+Kabupaten Jombang,35
+Kabupaten Nganjuk,35
+Kabupaten Madiun,35
+Kabupaten Magetan,35
+Kabupaten Ngawi,35
+Kabupaten Bojonegoro,35
+Kabupaten Tuban,35
+Kabupaten Lamongan,35
+Kabupaten Gresik,35
+Kabupaten Bangkalan,35
+Kabupaten Sampang,35
+Kabupaten Pamekasan,35
+Kabupaten Sumenep,35
+Kota Kediri,35
+Kota Blitar,35
+Kota Malang,35
+Kota Probolinggo,35
+Kota Pasuruan,35
+Kota Mojokerto,35
+Kota Madiun,35
+Kota Surabaya,35
+Kota Batu,35
+Kabupaten Pandeglang,36
+Kabupaten Lebak,36
+Kabupaten Tangerang,36
+Kabupaten Serang,36
+Kota Tangerang,36
+Kota Cilegon,36
+Kota Serang,36
+Kota Tangerang Selatan,36
+Kabupaten Jembrana,51
+Kabupaten Tabanan,51
+Kabupaten Badung,51
+Kabupaten Gianyar,51
+Kabupaten Klungkung,51
+Kabupaten Bangli,51
+Kabupaten Karangasem,51
+Kabupaten Buleleng,51
+Kota Denpasar,51
+Kabupaten Lombok Barat,52
+Kabupaten Lombok Tengah,52
+Kabupaten Lombok Timur,52
+Kabupaten Sumbawa,52
+Kabupaten Dompu,52
+Kabupaten Bima,52
+Kabupaten Sumbawa Barat,52
+Kabupaten Lombok Utara,52
+Kota Mataram,52
+Kota Bima,52
+Kabupaten Kupang,53
+Kabupaten Timor Tengah Selatan,53
+Kabupaten Timor Tengah Utara,53
+Kabupaten Belu,53
+Kabupaten Alor,53
+Kabupaten Flores Timur,53
+Kabupaten Sikka,53
+Kabupaten Ende,53
+Kabupaten Ngada,53
+Kabupaten Manggarai,53
+Kabupaten Sumba Timur,53
+Kabupaten Sumba Barat,53
+Kabupaten Lembata,53
+Kabupaten Rote Ndao,53
+Kabupaten Manggarai Barat,53
+Kabupaten Nagekeo,53
+Kabupaten Sumba Tengah,53
+Kabupaten Sumba Barat Daya,53
+Kabupaten Manggarai Timur,53
+Kabupaten Sabu Raijua,53
+Kabupaten Malaka,53
+Kota Kupang,53
+Kabupaten Sambas,61
+Kabupaten Mempawah,61
+Kabupaten Sanggau,61
+Kabupaten Ketapang,61
+Kabupaten Sintang,61
+Kabupaten Kapuas Hulu,61
+Kabupaten Bengkayang,61
+Kabupaten Landak,61
+Kabupaten Sekadau,61
+Kabupaten Melawi,61
+Kabupaten Kayong Utara,61
+Kabupaten Kubu Raya,61
+Kota Pontianak,61
+Kota Singkawang,61
+Kabupaten Kotawaringin Barat,62
+Kabupaten Kotawaringin Timur,62
+Kabupaten Kapuas,62
+Kabupaten Barito Selatan,62
+Kabupaten Barito Utara,62
+Kabupaten Katingan,62
+Kabupaten Seruyan,62
+Kabupaten Sukamara,62
+Kabupaten Lamandau,62
+Kabupaten Gunung Mas,62
+Kabupaten Pulang Pisau,62
+Kabupaten Murung Raya,62
+Kabupaten Barito Timur,62
+Kota Palangkaraya,62
+Kabupaten Tanah Laut,63
+Kabupaten Kotabaru,63
+Kabupaten Banjar,63
+Kabupaten Barito Kuala,63
+Kabupaten Tapin,63
+Kabupaten Hulu Sungai Selatan,63
+Kabupaten Hulu Sungai Tengah,63
+Kabupaten Hulu Sungai Utara,63
+Kabupaten Tabalong,63
+Kabupaten Tanah Bumbu,63
+Kabupaten Balangan,63
+Kota Banjarmasin,63
+Kota Banjarbaru,63
+Kabupaten Paser,64
+Kabupaten Kutai Kartanegara,64
+Kabupaten Berau,64
+Kabupaten Kutai Barat,64
+Kabupaten Kutai Timur,64
+Kabupaten Penajam Paser Utara,64
+Kabupaten Mahakam Ulu,64
+Kota Balikpapan,64
+Kota Samarinda,64
+Kota Bontang,64
+Kabupaten Bulungan,65
+Kabupaten Malinau,65
+Kabupaten Nunukan,65
+Kabupaten Tana Tidung,65
+Kota Tarakan,65
+Kabupaten Bolaang Mongondow,71
+Kabupaten Minahasa,71
+Kabupaten Kepulauan Sangihe,71
+Kabupaten Kepulauan Talaud,71
+Kabupaten Minahasa Selatan,71
+Kabupaten Minahasa Utara,71
+Kabupaten Minahasa Tenggara,71
+Kabupaten Bolaang Mongondow Utara,71
+Kabupaten Kep. Siau Tagulandang Biaro,71
+Kabupaten Bolaang Mongondow Timur,71
+Kabupaten Bolaang Mongondow Selatan,71
+Kota Manado,71
+Kota Bitung,71
+Kota Tomohon,71
+Kota Kotamobagu,71
+Kabupaten Banggai,72
+Kabupaten Poso,72
+Kabupaten Donggala,72
+Kabupaten Toli-Toli,72
+Kabupaten Buol,72
+Kabupaten Morowali,72
+Kabupaten Banggai Kepulauan,72
+Kabupaten Parigi Moutong,72
+Kabupaten Tojo Una Una,72
+Kabupaten Sigi,72
+Kabupaten Banggai Laut,72
+Kabupaten Morowali Utara,72
+Kota Palu,72
+Kabupaten Kepulauan Selayar,73
+Kabupaten Bulukumba,73
+Kabupaten Bantaeng,73
+Kabupaten Jeneponto,73
+Kabupaten Takalar,73
+Kabupaten Gowa,73
+Kabupaten Sinjai,73
+Kabupaten Bone,73
+Kabupaten Maros,73
+Kabupaten Pangkajene dan Kepulauan,73
+Kabupaten Barru,73
+Kabupaten Soppeng,73
+Kabupaten Wajo,73
+Kabupaten Sidenreng Rappang,73
+Kabupaten Pinrang,73
+Kabupaten Enrekang,73
+Kabupaten Luwu,73
+Kabupaten Tana Toraja,73
+Kabupaten Luwu Utara,73
+Kabupaten Luwu Timur,73
+Kabupaten Toraja Utara,73
+Kota Makassar,73
+Kota Parepare,73
+Kota Palopo,73
+Kabupaten Kolaka,74
+Kabupaten Konawe,74
+Kabupaten Muna,74
+Kabupaten Buton,74
+Kabupaten Konawe Selatan,74
+Kabupaten Bombana,74
+Kabupaten Wakatobi,74
+Kabupaten Kolaka Utara,74
+Kabupaten Konawe Utara,74
+Kabupaten Buton Utara,74
+Kabupaten Kolaka Timur,74
+Kabupaten Konawe Kepulauan,74
+Kabupaten Muna Barat,74
+Kabupaten Buton Tengah,74
+Kabupaten Buton Selatan,74
+Kota Kendari,74
+Kota Bau Bau,74
+Kabupaten Gorontalo,75
+Kabupaten Boalemo,75
+Kabupaten Bone Bolango,75
+Kabupaten Pohuwato,75
+Kabupaten Gorontalo Utara,75
+Kota Gorontalo,75
+Kabupaten Pasangkayu,76
+Kabupaten Mamuju,76
+Kabupaten Mamasa,76
+Kabupaten Polewali Mandar,76
+Kabupaten Majene,76
+Kabupaten Mamuju Tengah,76
+Kabupaten Maluku Tengah,81
+Kabupaten Maluku Tenggara,81
+Kabupaten Kepulauan Tanimbar,81
+Kabupaten Buru,81
+Kabupaten Seram Bagian Timur,81
+Kabupaten Seram Bagian Barat,81
+Kabupaten Kepulauan Aru,81
+Kabupaten Maluku Barat Daya,81
+Kabupaten Buru Selatan,81
+Kota Ambon,81
+Kota Tual,81
+Kabupaten Halmahera Barat,82
+Kabupaten Halmahera Tengah,82
+Kabupaten Halmahera Utara,82
+Kabupaten Halmahera Selatan,82
+Kabupaten Kepulauan Sula,82
+Kabupaten Halmahera Timur,82
+Kabupaten Pulau Morotai,82
+Kabupaten Pulau Taliabu,82
+Kota Ternate,82
+Kota Tidore Kepulauan,82
+Kabupaten Jayapura,91
+Kabupaten Kepulauan Yapen,91
+Kabupaten Biak Numfor,91
+Kabupaten Sarmi,91
+Kabupaten Keerom,91
+Kabupaten Waropen,91
+Kabupaten Supiori,91
+Kabupaten Mamberamo Raya,91
+Kota Jayapura,91
+Kabupaten Manokwari,92
+Kabupaten Fak Fak,92
+Kabupaten Teluk Bintuni,92
+Kabupaten Teluk Wondama,92
+Kabupaten Kaimana,92
+Kabupaten Manokwari Selatan,92
+Kabupaten Pegunungan Arfak,92
+Kabupaten Merauke,93
+Kabupaten Boven Digoel,93
+Kabupaten Mappi,93
+Kabupaten Asmat,93
+Kabupaten Nabire,94
+Kabupaten Puncak Jaya,94
+Kabupaten Paniai,94
+Kabupaten Mimika,94
+Kabupaten Puncak,94
+Kabupaten Dogiyai,94
+Kabupaten Intan Jaya,94
+Kabupaten Deiyai,94
+Kabupaten Jayawijaya,95
+Kabupaten Pegunungan Bintang,95
+Kabupaten Yahukimo,95
+Kabupaten Tolikara,95
+Kabupaten Mamberamo Tengah,95
+Kabupaten Yalimo,95
+Kabupaten Lanny Jaya,95
+Kabupaten Nduga,95
+Kabupaten Sorong,96
+Kabupaten Sorong Selatan,96
+Kabupaten Raja Ampat,96
+Kabupaten Tambrauw,96
+Kabupaten Maybrat,96
+Kota Sorong,96
