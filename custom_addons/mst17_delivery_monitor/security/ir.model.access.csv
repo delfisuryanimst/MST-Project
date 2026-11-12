@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_delivery_monitor_line_stock,mst.delivery.monitor.line stock,model_mst_delivery_monitor_line,stock.group_stock_user,1,1,1,1
+access_delivery_monitor_line_sale,mst.delivery.monitor.line sales admin,model_mst_delivery_monitor_line,sales_team.group_sale_manager,1,1,1,1
+access_delivery_monitor_product_stock,mst.delivery.monitor.product stock,model_mst_delivery_monitor_product,stock.group_stock_user,1,1,1,1
+access_delivery_monitor_product_sale,mst.delivery.monitor.product sales admin,model_mst_delivery_monitor_product,sales_team.group_sale_manager,1,1,1,1

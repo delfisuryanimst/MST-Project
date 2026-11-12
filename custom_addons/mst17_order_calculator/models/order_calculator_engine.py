@@ -436,6 +436,8 @@ class OrderCalculatorEngine(models.AbstractModel):
         ICP = self.env["ir.config_parameter"].sudo()
         hist = json.loads(ICP.get_param(PARAM + "history", "{}"))
         country = self.env.company.country_id.id or 0
+        #keterlambatan PO = tanggal penerimaan - tanggal rencana PO; 
+        #lead time impor = tanggal penerimaan - tanggal approve PO.
         self.env.cr.execute("""
             SELECT EXTRACT(EPOCH FROM sm.date - pol.date_planned) / 86400,
                    EXTRACT(EPOCH FROM sm.date - po.date_approve) / 86400,

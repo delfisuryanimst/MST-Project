@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_type_form_delivery_monitor" model="ir.ui.view">
+        <field name="name">stock.picking.type.form.delivery.monitor</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <field name="sequence_code" position="after">
+                <field name="delivery_monitor_kind"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_category_form_view_delivery_monitor" model="ir.ui.view">
+        <field name="name">product.category.form.delivery.monitor</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="delivery_monitor_group"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_location_form_delivery_monitor" model="ir.ui.view">
+        <field name="name">stock.location.form.delivery.monitor</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <field name="usage" position="after">
+                <field name="delivery_monitor_role" invisible="usage != 'internal'"/>
+            </field>
+        </field>
+    </record>
+</odoo>

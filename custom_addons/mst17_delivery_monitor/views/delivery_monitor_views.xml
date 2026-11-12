@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="delivery_monitor_line_view_tree" model="ir.ui.view">
+        <field name="name">mst.delivery.monitor.line.tree</field>
+        <field name="model">mst.delivery.monitor.line</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0" decoration-danger="age == '15'">
+                <field name="picking_id"/>
+                <field name="partner_id"/>
+                <field name="origin" optional="hide"/>
+                <field name="kind"/>
+                <field name="category"/>
+                <field name="scheduled_date"/>
+                <field name="date_done" optional="hide"/>
+                <field name="status" widget="badge" decoration-warning="status == 'waiting'"
+                       decoration-info="status in ('ready', 'qty_real')" decoration-success="status == 'done'"/>
+                <field name="issue" widget="badge" decoration-warning="issue == 'available'"
+                       decoration-danger="issue == 'none'"/>
+                <field name="age" optional="hide"/>
+                <field name="age_days" optional="hide"/>
+                <field name="yds" sum="Total"/>
+                <field name="kg" sum="Total" optional="show"/>
+                <field name="roll" sum="Total" optional="show"/>
+                <field name="free_stock"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="delivery_monitor_line_view_form" model="ir.ui.view">
+        <field name="name">mst.delivery.monitor.line.form</field>
+        <field name="model">mst.delivery.monitor.line</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_open_picking" string="Buka dokumen" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <h2><field name="picking_id" readonly="1"/></h2>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="origin"/>
+                            <field name="kind"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="scheduled_date"/>
+                            <field name="date_done" invisible="not date_done"/>
+                            <field name="status"/>
+                            <field name="issue" invisible="not issue"/>
+                            <field name="free_stock" invisible="not free_stock"/>
+                        </group>
+                    </group>
+                    <field name="product_line_ids">
+                        <tree>
+                            <field name="product_id"/>
+                            <field name="category"/>
+                            <field name="qty_text" class="text-end"/>
+                            <field name="issue" widget="badge" decoration-warning="issue == 'available'"
+                                   decoration-danger="issue == 'none'"/>
+                            <field name="free_stock"/>
+                            <field name="qc_stock"/>
+                            <field name="agent_stock"/>
+                        </tree>
+                    </field>
+                    <field name="note" invisible="not note"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="delivery_monitor_line_view_search" model="ir.ui.view">
+        <field name="name">mst.delivery.monitor.line.search</field>
+        <field name="model">mst.delivery.monitor.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="picking_id"/>
+                <field name="partner_id"/>
+                <field name="origin"/>
+                <field name="product_line_ids" string="Produk" filter_domain="[('product_line_ids.product_id', 'ilike', self)]"/>
+                <filter name="waiting" string="Waiting" domain="[('status', '=', 'waiting')]"/>
+                <filter name="over_14" string="&gt; 14 hari" domain="[('age', '=', '15')]"/>
+                <group expand="1" string="Group By">
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_issue" string="Kendala" context="{'group_by': 'issue'}"/>
+                    <filter name="group_kind" string="Tipe Kiriman" context="{'group_by': 'kind'}"/>
+                    <filter name="group_category" string="Kategori" context="{'group_by': 'category'}"/>
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_scheduled" string="Tanggal jadwal" context="{'group_by': 'scheduled_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_delivery_monitor" model="ir.actions.client">
+        <field name="name">Monitor Pengiriman</field>
+        <field name="tag">mst17_delivery_monitor.delivery_monitor</field>
+    </record>
+
+    <menuitem id="menu_delivery_monitor" name="Monitor Pengiriman" parent="mst17_receipt_monitor.menu_monitoring"
+              action="action_delivery_monitor" sequence="20"
+              groups="stock.group_stock_user,sales_team.group_sale_manager"/>
+</odoo>

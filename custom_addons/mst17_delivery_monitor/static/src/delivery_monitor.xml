@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mst17_delivery_monitor.Segment">
+        <div class="btn-group flex-wrap">
+            <button t-foreach="options" t-as="option" t-key="option[0]" type="button"
+                    t-attf-class="btn btn-sm {{state[field] === option[0] ? 'btn-primary' : 'btn-outline-primary'}}"
+                    t-on-click="() => this.choose(field, option[0])" t-esc="option[1]"/>
+        </div>
+    </t>
+
+    <t t-name="mst17_delivery_monitor.DeliveryMonitor">
+        <div class="o_action o_mst_dm h-100 overflow-auto">
+            <div class="o_dm_top">
+                <div class="o_dm_field">
+                    <label>Tanggal</label>
+                    <input type="date" class="form-control form-control-sm" t-att-value="state.date" t-on-change="onDateChange"/>
+                </div>
+                <div class="o_dm_field">
+                    <label>Periode</label>
+                    <t t-call="mst17_delivery_monitor.Segment"><t t-set="options" t-value="periods"/><t t-set="field" t-value="'period'"/></t>
+                </div>
+                <div class="o_dm_field">
+                    <label>Kiriman</label>
+                    <t t-call="mst17_delivery_monitor.Segment"><t t-set="options" t-value="scopes"/><t t-set="field" t-value="'scope'"/></t>
+                </div>
+                <div class="o_dm_field">
+                    <label>Kategori</label>
+                    <t t-call="mst17_delivery_monitor.Segment"><t t-set="options" t-value="categories"/><t t-set="field" t-value="'category'"/></t>
+                </div>
+                <div class="o_dm_updated text-muted small" t-if="state.data">
+                    <i t-if="state.loading" class="fa fa-spinner fa-spin me-1"/>
+                    Diperbarui <t t-esc="state.data.updated"/> WIB
+                    <button type="button" class="btn btn-secondary btn-sm ms-1" t-on-click="() => this.load()">Muat ulang</button>
+                </div>
+            </div>
+
+            <t t-if="state.data">
+                <t t-set="data" t-value="state.data"/>
+                <div class="o_dm_grid o_dm_g2">
+                    <div class="o_dm_panel">
+                        <h3 t-esc="title"/>
+                        <div class="o_dm_sub">Kiriman prioritas (bintang) + seluruh pengiriman ke Agen MTX, sesuai jadwal · <t t-esc="scopeLabel"/></div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Status</th><th class="text-end">Dok</th><th class="text-end">yds</th><th class="text-end">kg</th><th class="text-end">roll</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="data.statuses" t-as="row" t-key="row.key" t-att-class="{o_dm_click: row.doc}"
+                                    t-on-click="() => this.open('status', row.key, row.doc)">
+                                    <td><span t-attf-class="o_dm_pill o_dm_{{statusPill(row.key)}}" t-esc="row.label"/></td>
+                                    <td class="text-end" t-esc="row.doc"/>
+                                    <td class="text-end" t-esc="fmt(row.yds)"/>
+                                    <td class="text-end" t-esc="fmt(row.kg)"/>
+                                    <td class="text-end" t-esc="fmt(row.roll)"/>
+                                </tr>
+                                <tr class="o_dm_total" t-att-class="{o_dm_click: data.total.doc}"
+                                    t-on-click="() => this.open(false, false, data.total.doc)">
+                                    <td>Total</td>
+                                    <td class="text-end" t-esc="data.total.doc"/>
+                                    <td class="text-end" t-esc="fmt(data.total.yds)"/>
+                                    <td class="text-end" t-esc="fmt(data.total.kg)"/>
+                                    <td class="text-end" t-esc="fmt(data.total.roll)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="o_dm_panel">
+                        <h3>Kendala Pengiriman</h3>
+                        <div class="o_dm_sub">Dokumen Waiting. Stok MST tanpa SAM0500, TTP, VIRT; roll yang di-booking tidak dihitung</div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Kendala</th><th class="text-end">Dok</th><th class="text-end">yds</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="data.issues" t-as="row" t-key="row.key" t-att-class="{o_dm_click: row.doc}"
+                                    t-on-click="() => this.open('issue', row.key, row.doc)">
+                                    <td>
+                                        <span t-if="issuePill(row.key)" t-attf-class="o_dm_pill o_dm_{{issuePill(row.key)}}" t-esc="row.label"/>
+                                        <t t-else="" t-esc="row.label"/>
+                                        <div class="o_dm_note" t-if="issueNote(row)" t-esc="issueNote(row)"/>
+                                    </td>
+                                    <td class="text-end" t-esc="row.doc"/>
+                                    <td class="text-end" t-esc="fmt(row.yds)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="o_dm_grid o_dm_g3">
+                    <div class="o_dm_panel">
+                        <h3>Tipe Kiriman</h3>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Tipe</th><th class="text-end">Dok</th><th class="text-end">yds</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="data.kinds" t-as="row" t-key="row.key" class="o_dm_click"
+                                    t-on-click="() => this.open('kind', row.key, row.doc)">
+                                    <td t-esc="row.label"/>
+                                    <td class="text-end" t-esc="row.doc"/>
+                                    <td class="text-end" t-esc="fmt(row.yds)"/>
+                                </tr>
+                                <tr t-if="!data.kinds.length"><td colspan="3" class="text-muted">Tidak ada dokumen.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="o_dm_panel">
+                        <h3>Berdasarkan Kategori Produk</h3>
+                        <div class="o_dm_sub" t-if="state.period === 'today'">Persentase = bagian yang sudah Done (yds)</div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Kategori</th><th class="text-end">Dok</th><th class="text-end">yds</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="data.categories" t-as="row" t-key="row.key" t-att-class="{o_dm_click: row.doc}"
+                                    t-on-click="() => this.open('category', row.key, row.doc)">
+                                    <td>
+                                        <t t-esc="row.label"/>
+                                        <t t-if="state.period === 'today' and row.doc">
+                                            <div class="o_dm_bar"><i t-attf-style="width: {{row.done_pct}}%"/></div>
+                                            <div class="o_dm_note">Done <t t-esc="row.done_pct"/>%</div>
+                                        </t>
+                                    </td>
+                                    <td class="text-end" t-esc="row.doc"/>
+                                    <td class="text-end" t-esc="fmt(row.yds)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="o_dm_panel">
+                        <h3>Per Lokasi Gudang Asal</h3>
+                        <div class="o_dm_sub">Ready &amp; Done; TTP tidak ditampilkan</div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Sub gudang</th><th class="text-end">Dok</th><th class="text-end">roll</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="data.places" t-as="row" t-key="row.key" class="o_dm_click"
+                                    t-on-click="() => this.open('place', row.key, row.doc)">
+                                    <td t-esc="row.label"/>
+                                    <td class="text-end" t-esc="row.doc"/>
+                                    <td class="text-end" t-esc="fmt(row.roll)"/>
+                                </tr>
+                                <tr t-if="!data.places.length"><td colspan="3" class="text-muted">Tidak ada dokumen.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="o_dm_grid o_dm_g2" t-if="state.period === 'today' or state.period === 'late'">
+                    <div class="o_dm_panel" t-if="state.period === 'today'">
+                        <h3>Tertunda, selesai hari ini</h3>
+                        <div class="o_dm_sub">Jadwal hari sebelumnya, Done di tanggal ini (tidak termasuk tabel di atas)</div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Status</th><th class="text-end">Dok</th><th class="text-end">yds</th><th class="text-end">roll</th></tr></thead>
+                            <tbody>
+                                <tr t-att-class="{o_dm_click: data.late_done.doc}"
+                                    t-on-click="() => this.open('late_done', false, data.late_done.doc)">
+                                    <td><span class="o_dm_pill o_dm_ok">Done</span></td>
+                                    <td class="text-end" t-esc="data.late_done.doc"/>
+                                    <td class="text-end" t-esc="fmt(data.late_done.yds)"/>
+                                    <td class="text-end" t-esc="fmt(data.late_done.roll)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="o_dm_panel" t-if="state.period === 'late'">
+                        <h3>Umur keterlambatan</h3>
+                        <div class="o_dm_sub">Sejak jadwal kirim; jadwal sebelum tanggal ini, belum Done</div>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Umur</th><th class="text-end">Dok</th><th class="text-end">yds</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="data.ages" t-as="row" t-key="row.key" t-att-class="{o_dm_click: row.doc}"
+                                    t-on-click="() => this.open('age', row.key, row.doc)">
+                                    <td>
+                                        <span t-if="row.key === '15'" class="o_dm_pill o_dm_bad" t-esc="row.label"/>
+                                        <t t-else="" t-esc="row.label"/>
+                                    </td>
+                                    <td class="text-end" t-esc="row.doc"/>
+                                    <td class="text-end" t-esc="fmt(row.yds)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="o_dm_foot">
+                    <div><b>Klik angka</b>Setiap baris membuka daftar Dokumen Kiriman dengan filter yang sama.</div>
+                    <div><b>Satuan</b>yds (m × 1,0936), kg dan roll ditampilkan terpisah, tidak dijumlah mentah.</div>
+                    <div><b>Hak akses</b>Grup Inventory dan Sales Administrator; tidak menampilkan harga.</div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
