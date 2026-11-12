@@ -177,6 +177,7 @@ class SalesDeliveryEngine(models.AbstractModel):
         if user_id:
             query += " AND sol.salesman_id = %s"
             params.append(user_id)
+        self.env.flush_all()  # the query reads moves and pickings that may still be in the cache
         self.env.cr.execute(query, params)
         rows = self.env.cr.dictfetchall()
         if rows:
@@ -231,7 +232,6 @@ class SalesDeliveryEngine(models.AbstractModel):
 
     @api.model
     def _report(self, period, month, until, team_id=False, user_id=False, measure="bruto", details=False):
-        self.env.flush_all()
         netto = measure == "netto"
         p = self._periods(period, month, until)
         scope = self._scope()

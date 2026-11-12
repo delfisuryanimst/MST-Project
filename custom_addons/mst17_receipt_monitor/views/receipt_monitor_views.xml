@@ -33,6 +33,14 @@
                 <field name="picking_id"/>
                 <field name="partner_id"/>
                 <field name="origin"/>
+                <filter name="received" string="Diterima" domain="[('group', '=', 'received')]"/>
+                <filter name="pending" string="Belum diterima" domain="[('group', '=', 'pending')]"/>
+                <filter name="late_received" string="Tertunda, diterima hari ini" domain="[('group', '=', 'late_received')]"/>
+                <filter name="late" string="Terlambat, belum diterima" domain="[('group', '=', 'late')]"/>
+                <separator/>
+                <filter name="age_1_3" string="1-3 hari" domain="[('age', '=', '1_3')]"/>
+                <filter name="age_4_7" string="4-7 hari" domain="[('age', '=', '4_7')]"/>
+                <filter name="age_8_14" string="8-14 hari" domain="[('age', '=', '8_14')]"/>
                 <filter name="over_14" string="> 14 hari" domain="[('age', '=', '15')]"/>
                 <group expand="1" string="Group By">
                     <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
