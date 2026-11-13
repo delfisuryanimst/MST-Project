@@ -6,7 +6,7 @@ REM   run-tests.bat mst17_order_calculator   one module (or several, separated b
 setlocal enabledelayedexpansion
 cd /d C:\odoo-dev
 
-set MODULES=mst17_receipt_monitor,mst17_delivery_monitor,mst17_sales_delivery,mst17_order_calculator,mst17_sales_journey
+set MODULES=mst17_receipt_monitor,mst17_delivery_monitor,mst17_sales_delivery,mst17_order_calculator,mst17_sales_journey,mst17_stock_card
 if not "%~1"=="" set MODULES=%~1
 set TAGS=
 for %%m in (%MODULES%) do set TAGS=!TAGS!,/%%m

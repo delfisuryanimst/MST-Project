@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mst_stock_card_form" model="ir.ui.view">
+        <field name="name">mst.stock.card.form</field>
+        <field name="model">mst.stock.card</field>
+        <field name="arch" type="xml">
+            <form string="Kartu Stok">
+                <header>
+                    <button name="action_show" type="object" string="Tampilkan" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="product_id" options="{'no_create': True}"/>
+                            <field name="warehouse_id" options="{'no_create': True}" placeholder="Semua warehouse"/>
+                            <field name="allowed_location_ids" invisible="1"/>
+                            <field name="location_id" options="{'no_create': True}" placeholder="Semua location"/>
+                            <field name="rack_id" options="{'no_create': True}" placeholder="Semua rak"
+                                   readonly="not location_id"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="opening"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_mst_stock_card_line_tree" model="ir.ui.view">
+        <field name="name">mst.stock.card.line.tree</field>
+        <field name="model">mst.stock.card.line</field>
+        <field name="arch" type="xml">
+            <tree string="Kartu Stok" create="false" edit="false" delete="false"
+                  decoration-success="move_type == 'in'" decoration-danger="move_type == 'out'"
+                  decoration-muted="move_type == 'trf'" decoration-bf="not move_type">
+                <field name="date"/>
+                <field name="reference"/>
+                <field name="product_id" optional="show"/>
+                <field name="uom_id" optional="show"/>
+                <field name="location_id"/>
+                <field name="location_dest_id"/>
+                <field name="partner_id"/>
+                <field name="quantity"/>
+                <field name="move_type"/>
+                <field name="balance"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mst_stock_card_line_search" model="ir.ui.view">
+        <field name="name">mst.stock.card.line.search</field>
+        <field name="model">mst.stock.card.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="reference"/>
+                <field name="partner_id"/>
+                <field name="location_id"/>
+                <field name="location_dest_id"/>
+                <filter name="type_in" string="IN" domain="[('move_type', '=', 'in')]"/>
+                <filter name="type_out" string="OUT" domain="[('move_type', '=', 'out')]"/>
+                <filter name="type_trf" string="TRF" domain="[('move_type', '=', 'trf')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="IN/OUT" context="{'group_by': 'move_type'}"/>
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_from" string="From" context="{'group_by': 'location_id'}"/>
+                    <filter name="group_to" string="To" context="{'group_by': 'location_dest_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mst_stock_card" model="ir.actions.act_window">
+        <field name="name">Kartu Stok</field>
+        <field name="res_model">mst.stock.card</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_mst_stock_card" name="Kartu Stok" parent="stock.menu_warehouse_report"
+              action="action_mst_stock_card" sequence="5"/>
+</odoo>
