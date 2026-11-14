@@ -341,9 +341,19 @@ class SaleOrderLine(models.Model):
     # ------------------------------------------------------------------
 
     def _journey_booking_step(self):
-        """Booking (greige / finished goods). Booking models are not in this
-        database yet; return a step dict here once they are."""
-        return None
+        """Booking (greige / finished goods) from mst17_sales_booking, when installed.
+        Like the Mobile app, the step is only shown when the order has a booking."""
+        booking = self.order_id.booking_id if "booking_id" in self.order_id._fields else None
+        if not booking or booking.state not in ("to_approve", "booked", "closed"):
+            return None
+        lines = booking.line_ids.filtered(lambda b: b.product_id == self.product_id) or booking.line_ids
+        qty = sum(lines.mapped("product_uom_qty"))
+        return {
+            "key": "booking_%s" % booking.inventory_type,
+            "title": "Greige Booking" if booking.inventory_type == "rm" else "Finished Goods Booking",
+            "done": booking.state != "to_approve",
+            "info": "%s · %s %s" % (booking.name, _fmt(qty), lines[:1].product_uom.name),
+        }
 
     def _journey_production_step(self, purchase_lines):
         """Production / purchase. Subcontracting stages (e.g. Dyeing) can be

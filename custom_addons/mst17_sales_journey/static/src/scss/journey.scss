@@ -11,7 +11,21 @@ $journey-pills: (
     "bad": (#FBE4E4, #8A1C1C),
     "info": (#E1EEFB, #0B4F8A),
     "muted": (#EEF0F2, #4B5157),
+    "brand": (#EFE6EC, #714B67),
 );
+
+// Order Journey list: soft badges like the mockup instead of solid Bootstrap colors.
+.o_mst_journey_list .o_field_badge .badge {
+    font-weight: 400;
+    background-color: nth(map-get($journey-pills, "muted"), 1) !important;
+    color: nth(map-get($journey-pills, "muted"), 2) !important;
+    @each $decoration, $pill in (success: "ok", warning: "warn", danger: "bad", info: "info", primary: "brand") {
+        &.text-bg-#{$decoration} {
+            background-color: nth(map-get($journey-pills, $pill), 1) !important;
+            color: nth(map-get($journey-pills, $pill), 2) !important;
+        }
+    }
+}
 
 .o_mst_journey {
     display: flex;
