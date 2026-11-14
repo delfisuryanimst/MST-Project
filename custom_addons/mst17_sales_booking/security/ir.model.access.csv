@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_booking_salesman,mst.sale.booking salesman,model_mst_sale_booking,sales_team.group_sale_salesman,1,1,1,0
+access_sale_booking_manager,mst.sale.booking manager,model_mst_sale_booking,sales_team.group_sale_manager,1,1,1,1
+access_sale_booking_line_salesman,mst.sale.booking.line salesman,model_mst_sale_booking_line,sales_team.group_sale_salesman,1,1,1,1
+access_sale_booking_line_manager,mst.sale.booking.line manager,model_mst_sale_booking_line,sales_team.group_sale_manager,1,1,1,1

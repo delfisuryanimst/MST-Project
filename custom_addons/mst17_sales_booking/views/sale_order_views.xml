@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_booking" model="ir.ui.view">
+        <field name="name">sale.order.form.booking</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <button name="action_quotation_send" position="before">
+                <button name="action_book_stock" string="Book Stock" type="object"
+                        invisible="state not in ('draft', 'sent') or booking_id or not id"/>
+            </button>
+            <field name="payment_term_id" position="after">
+                <field name="booking_id" readonly="state not in ('draft', 'sent')"
+                       options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+</odoo>
