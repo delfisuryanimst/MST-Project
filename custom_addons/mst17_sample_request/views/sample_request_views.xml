@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sample_request_tree" model="ir.ui.view">
+        <field name="name">mst.sample.request.tree</field>
+        <field name="model">mst.sample.request</field>
+        <field name="arch" type="xml">
+            <tree string="Permintaan Sampel" decoration-muted="state in ('done', 'rejected')"
+                  decoration-danger="state in ('submitted', 'processing') and date_need and date_need &lt; current_date">
+                <field name="name"/>
+                <field name="date_submit"/>
+                <field name="date_need"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="team_id" optional="show"/>
+                <field name="partner_id"/>
+                <field name="sample_type"/>
+                <field name="product_count" optional="hide"/>
+                <field name="qty_total" sum="Total"/>
+                <field name="location_dest_id" optional="hide"/>
+                <field name="document_names" optional="show"/>
+                <field name="entry_uid" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-warning="state == 'submitted'" decoration-primary="state == 'processing'"
+                       decoration-success="state == 'done'" decoration-danger="state == 'rejected'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Cards for phones (mockup board 1a). -->
+    <record id="view_sample_request_kanban" model="ir.ui.view">
+        <field name="name">mst.sample.request.kanban</field>
+        <field name="model">mst.sample.request</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1">
+                <field name="state"/>
+                <field name="reject_reason"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="d-flex justify-content-between">
+                                <strong><field name="name"/></strong>
+                                <field name="state" widget="label_selection"
+                                       options="{'classes': {'draft': 'default', 'submitted': 'warning', 'processing': 'info', 'done': 'success', 'rejected': 'danger'}}"/>
+                            </div>
+                            <div>
+                                <field name="partner_id"/> · <field name="product_count"/> produk ·
+                                <field name="qty_total"/> y
+                            </div>
+                            <div class="d-flex justify-content-between text-muted">
+                                <span t-if="record.state.raw_value == 'rejected'"><t t-esc="record.reject_reason.value"/></span>
+                                <span t-else="">
+                                    <field name="sample_type"/> ·
+                                    <t t-if="record.document_names.raw_value"><field name="document_names"/></t>
+                                    <t t-else=""><field name="location_dest_id"/></t>
+                                </span>
+                                <field name="date_need"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_sample_request_form" model="ir.ui.view">
+        <field name="name">mst.sample.request.form</field>
+        <field name="model">mst.sample.request</field>
+        <field name="arch" type="xml">
+            <form string="Permintaan Sampel">
+                <header>
+                    <button name="action_submit" type="object" string="Ajukan" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_open_process" type="object" string="Proses" class="btn-primary"
+                            invisible="state != 'submitted'" groups="mst17_sample_request.group_sample_cutter"/>
+                    <button name="action_open_reject" type="object" string="Tolak"
+                            invisible="state != 'submitted'" groups="mst17_sample_request.group_sample_cutter"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,processing,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pickings" type="object" class="oe_stat_button" icon="fa-truck"
+                                invisible="not picking_count" groups="stock.group_stock_user">
+                            <field name="picking_count" widget="statinfo" string="Transfer"/>
+                        </button>
+                        <button name="action_view_quotation" type="object" class="oe_stat_button" icon="fa-dollar"
+                                invisible="not has_quotation" groups="sales_team.group_sale_salesman">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Quotation</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="is_admin_sales" invisible="1"/>
+                            <field name="user_id" options="{'no_create': True}"
+                                   readonly="not is_admin_sales or state != 'draft'"/>
+                            <field name="team_id" readonly="1"/>
+                            <field name="partner_id" readonly="state != 'draft'"
+                                   options="{'no_create_edit': True}"/>
+                            <field name="location_dest_id" options="{'no_create': True}"
+                                   readonly="not is_admin_sales or state not in ('draft', 'submitted')"/>
+                        </group>
+                        <group>
+                            <field name="sample_type" widget="radio" options="{'horizontal': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="purpose" readonly="state != 'draft'"/>
+                            <field name="date_need" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="document_names" invisible="not document_names"/>
+                            <field name="has_quotation" invisible="1"/>
+                            <field name="entry_uid" invisible="entry_uid == user_id"/>
+                            <field name="date_submit" invisible="not date_submit"/>
+                            <field name="date_done" invisible="not date_done"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" mode="list,kanban" readonly="state not in ('draft', 'submitted')">
+                        <tree editable="bottom">
+                            <field name="state" column_invisible="1"/>
+                            <field name="product_id" options="{'can_scan_barcode': True, 'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="qty" string="Diminta" sum="Total" readonly="state != 'draft'"/>
+                            <field name="uom_id"/>
+                            <field name="price_unit" column_invisible="parent.sample_type != 'paid'"
+                                   required="parent.sample_type == 'paid'" readonly="state != 'draft'"/>
+                            <field name="location_src_id" string="Lokasi asal" options="{'no_create': True}"
+                                   column_invisible="parent.state == 'draft'" readonly="state != 'submitted'"/>
+                            <field name="qty_free" string="Stok lokasi" column_invisible="parent.state == 'draft'"/>
+                            <field name="qty_cut" string="Qty potong" sum="Total"
+                                   column_invisible="parent.state == 'draft'" readonly="state != 'submitted'"/>
+                        </tree>
+                        <!-- Phones: cards instead of a wide table; a line is edited in a dialog. -->
+                        <kanban class="o_kanban_mobile">
+                            <field name="state"/>
+                            <field name="sample_type"/>
+                            <field name="uom_id"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div class="oe_kanban_global_click">
+                                        <div class="d-flex justify-content-between">
+                                            <strong><field name="product_id"/></strong>
+                                            <span class="ms-2 text-nowrap">
+                                                <field name="qty"/> <t t-esc="record.uom_id.value"/>
+                                            </span>
+                                        </div>
+                                        <div class="text-muted" t-if="record.sample_type.raw_value == 'paid'">
+                                            Harga/y: <field name="price_unit"/>
+                                        </div>
+                                        <div class="text-muted" t-if="record.state.raw_value != 'draft'">
+                                            <field name="location_src_id"/> · stok <field name="qty_free"/> ·
+                                            potong <field name="qty_cut"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>
+                        <form>
+                            <field name="state" invisible="1"/>
+                            <group>
+                                <field name="product_id" options="{'can_scan_barcode': True, 'no_create': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="qty" string="Diminta" readonly="state != 'draft'"/>
+                                <field name="uom_id"/>
+                                <field name="price_unit" invisible="parent.sample_type != 'paid'"
+                                       required="parent.sample_type == 'paid'" readonly="state != 'draft'"/>
+                                <field name="location_src_id" string="Lokasi asal" options="{'no_create': True}"
+                                       invisible="parent.state == 'draft'" readonly="state != 'submitted'"/>
+                                <field name="qty_free" string="Stok lokasi" invisible="parent.state == 'draft'"/>
+                                <field name="qty_cut" string="Qty potong" invisible="parent.state == 'draft'"
+                                       readonly="state != 'submitted'"/>
+                            </group>
+                        </form>
+                    </field>
+                    <group class="oe_subtotal_footer" invisible="sample_type != 'paid'">
+                        <field name="amount_total"/>
+                    </group>
+                    <field name="note" placeholder="Catatan" readonly="state not in ('draft', 'submitted')"/>
+                    <group invisible="state != 'rejected'">
+                        <field name="reject_reason"/>
+                    </group>
+                    <div class="text-muted small" invisible="state != 'draft'">
+                        Harga/y hanya wajib bila Berbayar. Lokasi tujuan otomatis dari Sales Team peminta.
+                    </div>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sample_request_search" model="ir.ui.view">
+        <field name="name">mst.sample.request.search</field>
+        <field name="model">mst.sample.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="line_ids" string="Produk" filter_domain="[('line_ids.product_id', 'ilike', self)]"/>
+                <filter name="submitted" string="Diajukan" domain="[('state', '=', 'submitted')]"/>
+                <filter name="open" string="Belum selesai" domain="[('state', 'in', ('draft', 'submitted', 'processing'))]"/>
+                <filter name="mine" string="Milik saya" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="free" string="Gratis" domain="[('sample_type', '=', 'free')]"/>
+                <filter name="paid" string="Berbayar" domain="[('sample_type', '=', 'paid')]"/>
+                <separator/>
+                <filter name="late" string="Lewat tanggal dibutuhkan"
+                        domain="[('state', 'in', ('submitted', 'processing')), ('date_need', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_location" string="Lokasi tujuan" context="{'group_by': 'location_dest_id'}"/>
+                    <filter name="group_user" string="Sales peminta" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_team" string="Sales Team" context="{'group_by': 'team_id'}"/>
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sample_request_sales" model="ir.actions.act_window">
+        <field name="name">Permintaan Sampel</field>
+        <field name="res_model">mst.sample.request</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="context">{'search_default_mine': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Belum ada permintaan sampel</p>
+            <p>Klik New, isi customer dan produk, lalu Ajukan.</p>
+        </field>
+    </record>
+
+    <!-- Same records for the cutting admin: only what is waiting or in progress (FDD appendix D). -->
+    <record id="action_sample_request_cutter" model="ir.actions.act_window">
+        <field name="name">Permintaan Sampel</field>
+        <field name="res_model">mst.sample.request</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="domain">[('state', 'in', ('submitted', 'processing'))]</field>
+        <field name="context">{'search_default_submitted': 1, 'search_default_group_location': 1, 'create': False}</field>
+    </record>
+</odoo>

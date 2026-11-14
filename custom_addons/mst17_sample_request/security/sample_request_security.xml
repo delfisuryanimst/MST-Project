@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_sample_request" model="ir.module.category">
+        <field name="name">Permintaan Sampel</field>
+        <field name="sequence">35</field>
+    </record>
+
+    <!-- Requesters: Sales, Sample, Merchandiser, Kemitraan, Agen SL / MTX. Only their own requests. -->
+    <record id="group_sample_sales" model="res.groups">
+        <field name="name">Sales</field>
+        <field name="category_id" ref="module_category_sample_request"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- All requests, may file a request for another user. -->
+    <record id="group_sample_admin_sales" model="res.groups">
+        <field name="name">Admin Sales</field>
+        <field name="category_id" ref="module_category_sample_request"/>
+        <field name="implied_ids" eval="[(4, ref('group_sample_sales'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- Processes and rejects from the Inventory menu; needs no Sales rights. -->
+    <record id="group_sample_cutter" model="res.groups">
+        <field name="name">Admin Pemotong</field>
+        <field name="category_id" ref="module_category_sample_request"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+
+    <record id="rule_sample_request_own" model="ir.rule">
+        <field name="name">Permintaan Sampel: milik sendiri</field>
+        <field name="model_id" ref="model_mst_sample_request"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_sample_sales'))]"/>
+    </record>
+    <record id="rule_sample_request_all" model="ir.rule">
+        <field name="name">Permintaan Sampel: semua</field>
+        <field name="model_id" ref="model_mst_sample_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_sample_admin_sales')), (4, ref('group_sample_cutter'))]"/>
+    </record>
+    <record id="rule_sample_request_line_own" model="ir.rule">
+        <field name="name">Baris Permintaan Sampel: milik sendiri</field>
+        <field name="model_id" ref="model_mst_sample_request_line"/>
+        <field name="domain_force">[('request_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_sample_sales'))]"/>
+    </record>
+    <record id="rule_sample_request_line_all" model="ir.rule">
+        <field name="name">Baris Permintaan Sampel: semua</field>
+        <field name="model_id" ref="model_mst_sample_request_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_sample_admin_sales')), (4, ref('group_sample_cutter'))]"/>
+    </record>
+    <record id="rule_sample_request_company" model="ir.rule">
+        <field name="name">Permintaan Sampel: perusahaan</field>
+        <field name="model_id" ref="model_mst_sample_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sample_request_process_form" model="ir.ui.view">
+        <field name="name">mst.sample.request.process.form</field>
+        <field name="model">mst.sample.request.process</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="request_id" invisible="1"/>
+                <field name="preview" readonly="1" nolabel="1"/>
+                <footer>
+                    <button name="action_confirm" type="object" string="Buat dokumen" class="btn-primary"/>
+                    <button string="Batal" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sample_request_reject_form" model="ir.ui.view">
+        <field name="name">mst.sample.request.reject.form</field>
+        <field name="model">mst.sample.request.reject</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="request_id" invisible="1"/>
+                <group>
+                    <field name="reason" placeholder="Contoh: stok L0500 habis, tunggu WH/IN"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Tolak" class="btn-primary"/>
+                    <button string="Batal" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

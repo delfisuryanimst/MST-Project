@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sample_request_sales,mst.sample.request sales,model_mst_sample_request,group_sample_sales,1,1,1,1
+access_sample_request_cutter,mst.sample.request cutter,model_mst_sample_request,group_sample_cutter,1,1,0,0
+access_sample_request_line_sales,mst.sample.request.line sales,model_mst_sample_request_line,group_sample_sales,1,1,1,1
+access_sample_request_line_cutter,mst.sample.request.line cutter,model_mst_sample_request_line,group_sample_cutter,1,1,0,0
+access_sample_request_report_admin,mst.sample.request.report admin sales,model_mst_sample_request_report,group_sample_admin_sales,1,0,0,0
+access_sample_request_report_cutter,mst.sample.request.report cutter,model_mst_sample_request_report,group_sample_cutter,1,0,0,0
+access_sample_request_process_cutter,mst.sample.request.process cutter,model_mst_sample_request_process,group_sample_cutter,1,1,1,1
+access_sample_request_reject_cutter,mst.sample.request.reject cutter,model_mst_sample_request_reject,group_sample_cutter,1,1,1,1

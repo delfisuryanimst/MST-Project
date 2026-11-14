@@ -1,5 +1,7 @@
 from . import res_company
 from . import stock_lot
+from . import stock_move
+from . import qc_conversion
 from . import mst_roll_history
 from . import mst_qc_alert
 from . import mst_qc_piece

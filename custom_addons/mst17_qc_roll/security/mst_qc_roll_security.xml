@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="module_category_qc_roll" model="ir.module.category">
-        <field name="name">QC Roll (Tahap 2)</field>
+        <field name="name">QC Roll</field>
         <field name="sequence">40</field>
     </record>
 
@@ -17,5 +17,12 @@
         <field name="category_id" ref="module_category_qc_roll"/>
         <field name="implied_ids" eval="[(4, ref('group_qc_inspector'))]"/>
         <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- FDD R-05: QC Koordinator and Group Leader may validate. -->
+    <record id="group_qc_group_leader" model="res.groups">
+        <field name="name">QC Group Leader</field>
+        <field name="category_id" ref="module_category_qc_roll"/>
+        <field name="implied_ids" eval="[(4, ref('group_qc_koordinator'))]"/>
     </record>
 </odoo>

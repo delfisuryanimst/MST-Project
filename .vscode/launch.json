@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Odoo 17 (odoo17)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/odoo/odoo-bin",
+            "python": "${workspaceFolder}/odoo/venv/Scripts/python.exe",
+            "args": ["-c", "odoo.conf", "-d", "odoo17", "--dev=xml", "--max-cron-threads=0"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}

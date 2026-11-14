@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_reservation_release_form" model="ir.ui.view">
+        <field name="name">mst.stock.reservation.release.form</field>
+        <field name="model">mst.stock.reservation.release</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="reservation_id" readonly="1"/>
+                    <label for="remaining_qty"/>
+                    <div class="o_row">
+                        <field name="remaining_qty"/>
+                        <field name="product_uom" groups="uom.group_uom"/>
+                    </div>
+                    <field name="qty"/>
+                </group>
+                <footer>
+                    <button name="action_release" string="Release" type="object" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

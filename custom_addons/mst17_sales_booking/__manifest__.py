@@ -1,16 +1,21 @@
 {
     "name": "MST Sales Booking",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.2.0",
     "summary": "Hold stock for a customer while the sale is still being negotiated",
     "description": """
 Sales Booking
 =============
-* A booking (BOOK/ finished goods, RM/ greige) holds free stock of a warehouse for one customer.
-  Salespeople confirm it, a Sales Manager approves it; managers book directly.
-* "Book Stock" on a quotation makes the booking from the order lines.
-* On order confirmation the booked quantity is used: the hold is freed for the delivery and
-  the rest stays booked. A booking is closed when everything is used.
-* Release frees the rest by hand; a daily job releases bookings past their Valid Until date.
+Two kinds of booking, like the live system:
+
+* Booking Stock (BOOK/): "Book Stock" on a quotation holds the free stock of each stockable line right
+  away, no approval. Status Booked / Released / Done. Release (all or part) frees it; on order
+  confirmation the line takes what it needs and the rest is freed. Smart button "Booking" on the order,
+  menu Inventory > Operations > Stock Reservations.
+* Booking Form (RM/ greige): a document with approval
+  (Draft > To Approve > Booked > Closed), linked to an order through "Booking Reference".
+  Menus Sales > Orders > Booking Form and Booking Form Line.
+
+A daily job releases bookings past their validity date.
 """,
     "category": "Sales/Sales",
     "author": "Delf",
@@ -20,6 +25,8 @@ Sales Booking
         "security/sales_booking_security.xml",
         "security/ir.model.access.csv",
         "data/sales_booking_data.xml",
+        "wizard/reservation_release_views.xml",
+        "views/stock_reservation_views.xml",
         "views/sale_booking_views.xml",
         "views/sale_order_views.xml",
     ],

@@ -1,11 +1,18 @@
 from odoo import fields, models
 
 ROLL_EVENTS = [
+    ("masuk", "Received"),
+    ("kirim_qc", "Sent to QC"),
+    ("pindah", "Moved"),
     ("lot_warna", "Lot Warna"),
     ("qty", "Qty Correction"),
+    ("pecah", "Split"),
+    ("ganti_produk", "Product Change"),
     ("turun_grade", "Downgrade"),
     ("scrap", "Scrap"),
-    ("pecah", "Split"),
+    ("epc", "EPC"),
+    ("label", "Label"),
+    ("kirim_customer", "Sent to Customer"),
 ]
 
 

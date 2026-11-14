@@ -7,6 +7,7 @@ RESULT_TYPES = [
     ("downgrade", "Downgrade"),
     ("scrap", "Scrap"),
     ("split", "Split"),
+    ("product_change", "Product Change"),
     ("mixed", "Mixed"),
 ]
 

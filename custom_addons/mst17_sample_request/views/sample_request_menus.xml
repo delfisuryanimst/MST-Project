@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- The Sales root has no group, so requesters without Sales rights still see these menus. -->
+    <menuitem id="menu_sample_request_sales" name="Permintaan Sampel" parent="sale.sale_order_menu"
+              action="action_sample_request_sales" sequence="30"
+              groups="mst17_sample_request.group_sample_sales"/>
+    <!-- Sales > Reporting is for Sales Managers only, so the report sits next to the requests. -->
+    <menuitem id="menu_sample_request_report" name="Laporan Permintaan Sampel" parent="sale.sale_order_menu"
+              action="action_sample_request_report" sequence="31"
+              groups="mst17_sample_request.group_sample_admin_sales,mst17_sample_request.group_sample_cutter"/>
+    <menuitem id="menu_sample_request_cutter" name="Permintaan Sampel" parent="stock.menu_stock_warehouse_mgmt"
+              action="action_sample_request_cutter" sequence="15"
+              groups="mst17_sample_request.group_sample_cutter"/>
+</odoo>

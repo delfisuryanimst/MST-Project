@@ -9,15 +9,15 @@
             <field name="company_id" eval="False"/>
         </record>
 
-        <record id="seq_sale_booking_fg" model="ir.sequence">
-            <field name="name">Sales Booking (Finished Goods)</field>
-            <field name="code">mst.sale.booking.fg</field>
+        <record id="seq_stock_reservation" model="ir.sequence">
+            <field name="name">Stock Reservation</field>
+            <field name="code">mst.stock.reservation</field>
             <field name="prefix">BOOK/%(year)s/</field>
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
         <record id="seq_sale_booking_rm" model="ir.sequence">
-            <field name="name">Sales Booking (Greige)</field>
+            <field name="name">Booking Form (Greige)</field>
             <field name="code">mst.sale.booking.rm</field>
             <field name="prefix">RM/%(year)s/</field>
             <field name="padding">4</field>
@@ -31,8 +31,17 @@
     </data>
 
     <record id="cron_release_expired" model="ir.cron">
-        <field name="name">Sales Booking: release expired bookings</field>
+        <field name="name">Booking Form: release expired bookings</field>
         <field name="model_id" ref="model_mst_sale_booking"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_release_expired()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+    <record id="cron_release_expired_reservations" model="ir.cron">
+        <field name="name">Stock Reservation: release expired reservations</field>
+        <field name="model_id" ref="model_mst_stock_reservation"/>
         <field name="state">code</field>
         <field name="code">model._cron_release_expired()</field>
         <field name="interval_number">1</field>

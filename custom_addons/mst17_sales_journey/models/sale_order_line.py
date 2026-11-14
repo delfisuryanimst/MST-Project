@@ -341,16 +341,30 @@ class SaleOrderLine(models.Model):
     # ------------------------------------------------------------------
 
     def _journey_booking_step(self):
-        """Booking (greige / finished goods) from mst17_sales_booking, when installed.
-        Like the Mobile app, the step is only shown when the order has a booking."""
-        booking = self.order_id.booking_id if "booking_id" in self.order_id._fields else None
-        if not booking or booking.state not in ("to_approve", "booked", "closed"):
+        """Booking from mst17_sales_booking, when installed: the line's stock reservation
+        (Book Stock), else the order's Booking Form. Like the Mobile app, the step is only
+        shown when there is a booking."""
+        order = self.order_id
+        if "reservation_ids" not in order._fields:
+            return None
+        reservation = order.reservation_ids.filtered(
+            lambda r: r.sale_order_line_id == self and r.booking_status != "released")[:1]
+        if reservation:
+            return {
+                "key": "booking_fg",
+                "title": "Finished Goods Booking",
+                "done": True,
+                "info": "%s · %s %s" % (reservation.name, _fmt(reservation.product_uom_qty),
+                                        reservation.product_uom.name),
+            }
+        booking = order.booking_id
+        if booking.state not in ("to_approve", "booked", "closed"):
             return None
         lines = booking.line_ids.filtered(lambda b: b.product_id == self.product_id) or booking.line_ids
         qty = sum(lines.mapped("product_uom_qty"))
         return {
-            "key": "booking_%s" % booking.inventory_type,
-            "title": "Greige Booking" if booking.inventory_type == "rm" else "Finished Goods Booking",
+            "key": "booking_rm",
+            "title": "Greige Booking",
             "done": booking.state != "to_approve",
             "info": "%s · %s %s" % (booking.name, _fmt(qty), lines[:1].product_uom.name),
         }

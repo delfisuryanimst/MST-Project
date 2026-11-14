@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sample_request_report_pivot" model="ir.ui.view">
+        <field name="name">mst.sample.request.report.pivot</field>
+        <field name="model">mst.sample.request.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Laporan Permintaan Sampel" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="date_submit" interval="month" type="col"/>
+                <field name="qty_cut" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_sample_request_report_graph" model="ir.ui.view">
+        <field name="name">mst.sample.request.report.graph</field>
+        <field name="model">mst.sample.request.report</field>
+        <field name="arch" type="xml">
+            <graph string="Laporan Permintaan Sampel" type="bar" sample="1">
+                <field name="date_submit" interval="month"/>
+                <field name="qty_cut" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_sample_request_report_tree" model="ir.ui.view">
+        <field name="name">mst.sample.request.report.tree</field>
+        <field name="model">mst.sample.request.report</field>
+        <field name="arch" type="xml">
+            <tree string="Laporan Permintaan Sampel">
+                <field name="request_id"/>
+                <field name="date_submit"/>
+                <field name="user_id"/>
+                <field name="team_id" optional="hide"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="sample_type"/>
+                <field name="qty" sum="Total"/>
+                <field name="qty_cut" sum="Total"/>
+                <field name="process_days" avg="Rata-rata"/>
+                <field name="converted"/>
+                <field name="state" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sample_request_report_search" model="ir.ui.view">
+        <field name="name">mst.sample.request.report.search</field>
+        <field name="model">mst.sample.request.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <field name="product_id"/>
+                <filter name="done" string="Selesai" domain="[('state', '=', 'done')]"/>
+                <filter name="converted" string="Jadi SO 90 hari" domain="[('converted', '=', True)]"/>
+                <separator/>
+                <filter name="free" string="Gratis" domain="[('sample_type', '=', 'free')]"/>
+                <filter name="paid" string="Berbayar" domain="[('sample_type', '=', 'paid')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_user" string="Sales peminta" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_product" string="Produk" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_month" string="Bulan" context="{'group_by': 'date_submit:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sample_request_report" model="ir.actions.act_window">
+        <field name="name">Laporan Permintaan Sampel</field>
+        <field name="res_model">mst.sample.request.report</field>
+        <field name="view_mode">pivot,graph,tree</field>
+    </record>
+</odoo>

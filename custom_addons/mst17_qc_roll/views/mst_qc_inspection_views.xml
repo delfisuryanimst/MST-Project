@@ -35,7 +35,7 @@
                 <field name="lot_warna_result" readonly="result_state != 'draft'"/>
                 <field name="qty_result" sum="Total" readonly="result_state != 'draft'"/>
                 <field name="qty_down" sum="Total" readonly="result_state != 'draft'"/>
-                <field name="product_down_id" options="{'no_create': True}"
+                <field name="product_result_id" options="{'no_create': True}"
                        readonly="result_state != 'draft'" required="qty_down &gt; 0 and result_state == 'draft'"/>
                 <field name="qty_scrap" sum="Total" readonly="result_state != 'draft'"/>
                 <field name="qty_diff" sum="Total"/>
@@ -43,8 +43,9 @@
                 <field name="result_type" widget="badge"
                        decoration-success="result_type == 'pass'"
                        decoration-info="result_type == 'data'"
-                       decoration-warning="result_type in ('qty', 'downgrade', 'mixed')"
+                       decoration-warning="result_type in ('qty', 'downgrade', 'product_change', 'mixed')"
                        decoration-danger="result_type == 'scrap'"/>
+                <field name="result_preview" optional="show"/>
                 <field name="result_state" widget="badge"
                        decoration-info="result_state == 'draft'" decoration-success="result_state == 'validated'"/>
             </tree>
@@ -87,15 +88,16 @@
                             <field name="lot_warna_result" readonly="result_state != 'draft'"/>
                             <field name="qty_result" readonly="result_state != 'draft'"/>
                             <field name="qty_down" readonly="result_state != 'draft'"/>
-                            <field name="product_down_id" options="{'no_create': True}"
+                            <field name="product_result_id" options="{'no_create': True}"
                                    readonly="result_state != 'draft'"
                                    required="qty_down &gt; 0 and result_state == 'draft'"/>
                             <field name="qty_scrap" readonly="result_state != 'draft'"/>
                             <field name="qty_diff"/>
                             <field name="result_type"/>
+                            <field name="result_preview" invisible="result_state != 'draft'"/>
                         </group>
                     </group>
-                    <field name="reason" placeholder="Reason (needed above the qty tolerance)"
+                    <field name="reason" placeholder="Reason (needed for a product change and above the qty tolerance)"
                            readonly="result_state != 'draft'"/>
                     <group string="Quality Check (from the check, read only)" invisible="not check_id">
                         <group>

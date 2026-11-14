@@ -6,7 +6,7 @@ REM   run-tests.bat mst17_order_calculator   one module (or several, separated b
 setlocal enabledelayedexpansion
 cd /d C:\odoo-dev
 
-set MODULES=mst17_receipt_monitor,mst17_delivery_monitor,mst17_sales_delivery,mst17_order_calculator,mst17_sales_journey,mst17_stock_card
+set MODULES=mst17_receipt_monitor,mst17_delivery_monitor,mst17_sales_delivery,mst17_order_calculator,mst17_sales_journey,mst17_stock_card,mst17_qc_roll,mst17_sample_request,mst17_sales_booking
 if not "%~1"=="" set MODULES=%~1
 set TAGS=
 for %%m in (%MODULES%) do set TAGS=!TAGS!,/%%m
@@ -19,7 +19,7 @@ set PGPASSWORD=odoo
 pgsql\bin\psql.exe -h localhost -U odoo -d %DB% -c "select 1" >nul 2>&1
 if errorlevel 1 (
     echo Membuat database %DB% ...
-    set ACTION=-i local_allowed_warehouse,local_sku_values,%MODULES%
+    set ACTION=-i local_allowed_warehouse,local_sku_values,local_lot_epc,%MODULES%
 ) else (
     set ACTION=-u %MODULES%
 )

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_team_view_form_inherit_sample" model="ir.ui.view">
+        <field name="name">crm.team.form.inherit.sample</field>
+        <field name="model">crm.team</field>
+        <field name="inherit_id" ref="sales_team.crm_team_view_form"/>
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="sample_location_id" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_company_form_inherit_sample" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.sample</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Permintaan Sampel" name="sample_request">
+                    <group>
+                        <field name="sample_location_id" options="{'no_create': True}"/>
+                        <field name="sample_picking_type_id" options="{'no_create': True}"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_location_form_inherit_sample" model="ir.ui.view">
+        <field name="name">stock.location.form.inherit.sample</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <field name="usage" position="after">
+                <field name="sample_source" invisible="usage != 'internal'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_picking_form_inherit_sample" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.sample</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="sample_request_id" invisible="not sample_request_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

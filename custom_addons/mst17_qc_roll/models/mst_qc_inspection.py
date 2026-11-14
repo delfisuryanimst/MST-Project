@@ -11,9 +11,10 @@ KOORDINATOR_GROUP = "mst17_qc_roll.group_qc_koordinator"
 class MstQcInspection(models.Model):
     """One roll (lot) waiting in the QC location. QC fills the result; a Koordinator validates it.
 
-    On Validate, Odoo turns the result into actions (TSD "Logika Validate hasil QC"):
+    On Validate, Odoo turns the result into actions (FDD QC ID Roll, appendix B):
     Lot Warna changed -> field + history, no document. Qty scrap -> Scrap (done).
-    Qty down -> Simplified MO to the B Grade product, same lot name (done).
+    Qty down -> Simplified MO to the Result Product (B Grade), same lot name (done).
+    Result Product without Qty Down -> Simplified MO product change A to A, same lot name (done).
     Qty result different from what is left -> Simplified MO qty correction, same lot (done).
     """
 
@@ -68,14 +69,17 @@ class MstQcInspection(models.Model):
     lot_warna_result = fields.Char(string="Lot Warna Result", help="Empty keeps the Lot Warna as it is.")
     qty_result = fields.Float(string="Qty Result", digits=(16, 2), help="Qty that passes and stays in the roll.")
     qty_down = fields.Float(string="Qty Down", digits=(16, 2), help="Qty that goes to the B Grade product.")
-    product_down_id = fields.Many2one(
-        "product.product", string="B Grade Product", domain=[("type", "=", "product")])
+    product_result_id = fields.Many2one(
+        "product.product", string="Result Product", domain=[("type", "=", "product")],
+        help="With Qty Down: the B Grade product of the downgrade. Without Qty Down: the roll changes to this "
+             "product (A to A, reason needed). The lot name stays the same.")
     qty_scrap = fields.Float(string="Qty Scrap", digits=(16, 2))
     reason = fields.Text(help="Needed when the qty difference is above the company tolerance.")
     qty_diff = fields.Float(
         string="Qty Difference", digits=(16, 2), compute="_compute_result",
         help="Qty Now minus (Qty Result + Qty Down + Qty Scrap). Not zero means a qty correction.")
     result_type = fields.Selection(RESULT_TYPES, compute="_compute_result")
+    result_preview = fields.Char(string="Odoo Will Make", compute="_compute_result")
 
     result_state = fields.Selection(
         [("draft", "Draft"), ("validated", "Validated")], default="draft", required=True, readonly=True,
@@ -202,28 +206,43 @@ class MstQcInspection(models.Model):
         self.ensure_one()
         return sum(self.piece_ids.mapped("qty")) if self.piece_ids else self.qty_result
 
+    def _is_product_change(self):
+        self.ensure_one()
+        return not self.qty_down and bool(self.product_result_id) and self.product_result_id != self.product_id
+
     @api.depends("qty_roll", "qty_result", "qty_down", "qty_scrap", "lot_warna_result", "result_state",
-                 "piece_ids.qty")
+                 "piece_ids.qty", "product_result_id")
     def _compute_result(self):
         for ins in self:
             if ins.result_state == "validated":
                 ins.qty_diff = ins.qty_before - ins._kept_qty() - ins.qty_down - ins.qty_scrap
                 ins.result_type = ins.result_type_done
+                ins.result_preview = False
                 continue
             ins.qty_diff = ins.qty_roll - ins._kept_qty() - ins.qty_down - ins.qty_scrap
-            if ins.piece_ids:
-                ins.result_type = "split"
-                continue
-            kinds = []
-            if ins.qty_down > 0:
-                kinds.append("downgrade")
-            if ins.qty_scrap > 0:
-                kinds.append("scrap")
-            if not float_is_zero(ins.qty_diff, precision_rounding=ins._rounding()):
-                kinds.append("qty")
+            kinds, makes = [], []
             if ins._lot_warna_changed():
                 kinds.append("data")
+                makes.append(_("Lot Warna"))
+            if ins.piece_ids:
+                kinds = ["split"]  # a split stays "split" (Inspect Pieces needs it), whatever else changes
+                makes.append(_("Split MO: %s new ID Roll", max(len(ins.piece_ids) - 1, 0)))
+            elif ins._is_product_change():
+                kinds.append("product_change")
+                makes.append(_("Product Change MO, same lot"))
+            else:
+                if ins.qty_down > 0:
+                    kinds.append("downgrade")
+                    makes.append(_("Downgrade MO, same lot"))
+                if not float_is_zero(ins.qty_diff, precision_rounding=ins._rounding()):
+                    kinds.append("qty")
+                    makes.append(_("Qty Correction MO, same lot"))
+            if ins.qty_scrap > 0:
+                makes.append(_("Scrap"))
+                if not ins.piece_ids:
+                    kinds.append("scrap")
             ins.result_type = "pass" if not kinds else kinds[0] if len(kinds) == 1 else "mixed"
+            ins.result_preview = " + ".join(makes) or _("Nothing")
 
     def _diff_above_tolerance(self):
         self.ensure_one()
@@ -256,13 +275,19 @@ class MstQcInspection(models.Model):
         if self.piece_ids:
             self._check_split(label)
             return
+        product = self.product_result_id
         if self.qty_down > 0:
-            if not self.product_down_id:
-                raise UserError(_("%s: choose the B Grade Product for the Qty Down.", label))
-            if self.product_down_id == self.product_id:
-                raise UserError(_("%s: the B Grade Product cannot be the roll's own product.", label))
-            if self.product_down_id.uom_id.category_id != self.uom_id.category_id:
-                raise UserError(_("%s: the B Grade Product needs a unit of the same kind.", label))
+            if not product:
+                raise UserError(_("%s: choose the Result Product (B Grade) for the Qty Down.", label))
+            if product == self.product_id:
+                raise UserError(_("%s: the Result Product cannot be the roll's own product.", label))
+        if product and product.uom_id.category_id != self.uom_id.category_id:
+            raise UserError(_("%s: the Result Product needs a unit of the same kind.", label))
+        if self._is_product_change():
+            if not (self.reason or "").strip():
+                raise UserError(_("%s: a product change needs a reason.", label))
+            if self.qty_result <= 0:
+                raise UserError(_("%s: a product change needs a Qty Result.", label))
         if self._diff_above_tolerance() and not (self.reason or "").strip():
             raise UserError(_(
                 "%(roll)s: Qty Result + Qty Down + Qty Scrap is %(total)s but the roll has %(qty)s. "
@@ -276,9 +301,9 @@ class MstQcInspection(models.Model):
             raise UserError(_("%s: a split needs at least 2 pieces.", label))
         if any(piece.qty <= 0 for piece in self.piece_ids):
             raise UserError(_("%s: every piece needs a qty greater than 0.", label))
-        if self.qty_down > 0:
-            raise UserError(_("%s: a split cannot be combined with a downgrade. Split first, then use "
-                              "Inspect Pieces to downgrade a piece.", label))
+        if self.qty_down > 0 or self._is_product_change():
+            raise UserError(_("%s: a split cannot be combined with a downgrade or a product change. Split "
+                              "first, then use Inspect Pieces for that piece.", label))
         if not float_is_zero(self.qty_diff, precision_rounding=self._rounding()):
             raise UserError(_(
                 "%(roll)s: the pieces (%(pieces)s) + Qty Scrap (%(scrap)s) must equal the roll qty (%(qty)s).",
@@ -316,14 +341,18 @@ class MstQcInspection(models.Model):
             lot.sudo().mst_lot_warna = self.lot_warna_result
         if self.qty_scrap > 0:
             self.scrap_ids |= self._make_scrap(self.qty_scrap)
+        left = qty_before - self.qty_scrap - self.qty_down
         if self.piece_ids:
             self.conversion_ids |= self._make_split()
+        elif self._is_product_change():
+            self.conversion_ids |= self._make_product_change(left, self.qty_result)
         else:
-            if self.qty_down > 0:
-                self.conversion_ids |= self._make_downgrade(self.qty_down)
-            left = qty_before - self.qty_scrap - self.qty_down
+            downgrade = self.qty_down > 0 and self._make_downgrade(self.qty_down)
             if not float_is_zero(left - self.qty_result, precision_rounding=self._rounding()):
                 self.conversion_ids |= self._make_qty_adjust(left, self.qty_result)
+            if downgrade:
+                self.conversion_ids |= downgrade
+                self.lot_id._mst_move_epc(downgrade.produce_line_ids.lot_id, downgrade)
         self.write({
             "result_state": "validated",
             "qty_before": qty_before,
@@ -331,7 +360,7 @@ class MstQcInspection(models.Model):
             "validated_by_id": self.env.user.id,
             "validated_date": fields.Datetime.now(),
         })
-        if self.qty_down > 0 or self.qty_scrap > 0 or above_tolerance:
+        if self.qty_down > 0 or self.qty_scrap > 0 or self._is_product_change() or above_tolerance:
             self.alert_id = self._make_alert()
 
     # ------------------------------------------------------------------ documents
@@ -356,14 +385,26 @@ class MstQcInspection(models.Model):
         self.lot_id._roll_event("scrap", qty, False, scrap)
         return scrap
 
-    def _get_lot(self, product, name):
+    def _get_lot(self, product, name, **create_vals):
         Lot = self.env["stock.lot"].with_context(clean_context(self.env.context))
         company = self.company_id or self.env.company
         return Lot.search([
             ("name", "=", name), ("product_id", "=", product.id), ("company_id", "=", company.id),
-        ], limit=1) or Lot.create({"name": name, "product_id": product.id, "company_id": company.id})
+        ], limit=1) or Lot.create(dict(create_vals, name=name, product_id=product.id, company_id=company.id))
 
-    def _make_conversion(self, title, consume_qty, produce_items):
+    def _get_roll_lot(self, product):
+        """Lot with the roll's name in another product; it takes over the empty roll data (PO, K3L...).
+        It gets no EPC of its own: the roll's tag moves to it once the roll is empty."""
+        roll = self.lot_id
+        lot = self._get_lot(product, roll.name, **({"x_epc": False} if "x_epc" in roll._fields else {}))
+        data = {key: value for key, value in roll._mst_roll_data().items() if value and not lot[key]}
+        if roll.mst_is_roll_id and not lot.mst_is_roll_id:
+            data["mst_is_roll_id"] = True
+        if data:
+            lot.sudo().write(data)
+        return lot
+
+    def _make_conversion(self, title, conversion_type, consume_qty, produce_items):
         """Simplified MO, validated at once. produce_items is a list of (product, qty, lot).
 
         The consume moves are done before the produce moves, so a roll that keeps its lot name never
@@ -374,6 +415,7 @@ class MstQcInspection(models.Model):
         line = {"location_id": location.id}
         conversion = self.env["qc.conversion"].create({
             "name": title,
+            "conversion_type": conversion_type,
             "origin": "%s / %s" % (self.picking_id.name, self.lot_id.name),
             "company_id": (self.company_id or self.env.company).id,
             "consume_line_ids": [fields.Command.create(dict(
@@ -393,20 +435,31 @@ class MstQcInspection(models.Model):
 
     def _make_downgrade(self, qty):
         self.ensure_one()
-        lot_b = self._get_lot(self.product_down_id, self.lot_id.name)
+        product_b = self.product_result_id
+        lot_b = self._get_roll_lot(product_b)
         if not lot_b.mst_item_a_id:
             lot_b.sudo().mst_item_a_id = self.product_id
-        if not lot_b.mst_lot_warna and self.lot_id.mst_lot_warna:
-            lot_b.sudo().mst_lot_warna = self.lot_id.mst_lot_warna
-        conversion = self._make_conversion(_("Downgrade"), qty, [(self.product_down_id, qty, lot_b)])
-        note = _("to %s", self.product_down_id.display_name)
-        self.lot_id._roll_event("turun_grade", qty, False, conversion, note)
+        conversion = self._make_conversion(_("Downgrade"), "downgrade", qty, [(product_b, qty, lot_b)])
+        self.lot_id._roll_event("turun_grade", qty, False, conversion, _("to %s", product_b.display_name))
         lot_b._roll_event("turun_grade", False, qty, conversion, _("from %s", self.product_id.display_name))
+        return conversion
+
+    def _make_product_change(self, old_qty, new_qty):
+        """A to A: the whole roll goes to the Result Product with the same lot name; the tag follows."""
+        self.ensure_one()
+        product = self.product_result_id
+        lot = self._get_roll_lot(product)
+        conversion = self._make_conversion(_("Product Change"), "product_change", old_qty, [(product, new_qty, lot)])
+        self.lot_id._roll_event("ganti_produk", self.product_id.display_name, product.display_name, conversion,
+                                self.reason)
+        lot._roll_event("ganti_produk", self.product_id.display_name, product.display_name, conversion, self.reason)
+        self.lot_id._mst_move_epc(lot, conversion)
         return conversion
 
     def _make_qty_adjust(self, old_qty, new_qty):
         self.ensure_one()
-        conversion = self._make_conversion(_("Qty Correction"), old_qty, [(self.product_id, new_qty, self.lot_id)])
+        conversion = self._make_conversion(
+            _("Qty Correction"), "qty_adjust", old_qty, [(self.product_id, new_qty, self.lot_id)])
         self.lot_id._roll_event("qty", old_qty, new_qty, conversion, self.reason)
         return conversion
 
@@ -423,17 +476,18 @@ class MstQcInspection(models.Model):
             lot.sudo().mst_lot_warna = keeper.lot_warna
         items = [(self.product_id, keeper.qty, lot)]
         for piece in self.piece_ids - keeper:
-            piece.new_lot_id = Lot.create({
-                "name": self.env["ir.sequence"].next_by_code("mst.roll.id"),
-                "product_id": self.product_id.id,
-                "company_id": company.id,
-                "mst_origin_lot_id": lot.id,
-                "mst_lot_warna": piece.lot_warna or lot.mst_lot_warna,
-                "mst_item_a_id": lot.mst_item_a_id.id,
-            })
+            piece.new_lot_id = Lot.create(dict(
+                lot._mst_roll_data(),
+                name=self.env["ir.sequence"].next_by_code("mst.roll.id"),
+                product_id=self.product_id.id,
+                company_id=company.id,
+                mst_origin_lot_id=lot.id,
+                mst_lot_warna=piece.lot_warna or lot.mst_lot_warna,
+                mst_item_a_id=lot.mst_item_a_id.id,
+            ))
             items.append((self.product_id, piece.qty, piece.new_lot_id))
         total = sum(self.piece_ids.mapped("qty"))
-        conversion = self._make_conversion(_("Split"), total, items)
+        conversion = self._make_conversion(_("Split"), "split", total, items)
         new_ids = ", ".join((self.piece_ids - keeper).mapped("new_lot_id.name"))
         lot._roll_event("pecah", total, keeper.qty, conversion, _("New rolls: %s", new_ids))
         for piece in self.piece_ids - keeper:
